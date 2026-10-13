@@ -1,0 +1,18 @@
+{
+  "network": "studionet",
+  "chainId": 61999,
+  "contractAddress": "0x900B946995Cf1B8C8BcF0C6cb95B0DC0F34E6167",
+  "deploymentTransaction": "0x6dcbe0b63c1302ed433efb3110791cd0e1d5e7ef461401447fce67574da970b9",
+  "sourceSha256": "ae6f5bf9d4a19e74d76fa55d5ae678a4e94b691bb2419d2b8565ae06e7ccf5d8",
+  "lifecycleVerification": {
+    "testOnly": true,
+    "charterId": 0,
+    "checkpointId": 0,
+    "sourceCheckOutcome": "MATCHES",
+    "registrationTransaction": "0x027e268ca10730180884f1ab1652c9828e5b98da5696da0559760d67efedf590",
+    "sourceCheckTransaction": "0x56b49c702f85c300ff43746f62d3bb20d6428064ea2074b191b12542be0b9033",
+    "unauthorizedDeactivationTransaction": "0xe16a1adee18578c0f067eefea8db0dbd8ad780ec46d7ab020d5a4df3ad325894",
+    "ownerDeactivationTransaction": "0x22f1aa8c54bf5d0f362deb9a0458e2b8539abc3e9740d81eabf0842eea45fb4f",
+    "finalActive": false
+  }
+}

@@ -4,6 +4,8 @@ __pycache__/
 .env
 .env.*
 node_modules/
+.pytest_cache/
+artifacts/
 .coverage
 coverage/
 playwright-report/

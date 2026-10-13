@@ -1,13 +1,13 @@
 # Security and trust model
 
 ## Current status
-Browser demo is functional and testable. GenLayer adapter is source-level only. There is **no live custody** and no live penalty mechanism.
+The browser has two isolated views: a local showcase and a GenLayerJS Real Network view connected to the verified PRIDE prototype on Studionet. The prototype has a finalized deployment and a live test-only register/check/authorization/deactivation cycle. It has no custody or penalty mechanism.
 
 ## Trust assumptions and attacks
 
 | Threat | Current defense | Required future defense |
 |---|---|---|
-| User lies about source text | Clearly labeled as local, unverified | Validators independently fetch allowlisted approved evidence |
+| User lies about source text | Local text is labeled unverified | Validators independently fetch allowlisted approved evidence |
 | Issuer registers someone else's site | Explicitly not verified | Prove domain/repository ownership, scoped signatures |
 | Source edited between validator reads | Candidate compares text exactly; unsettled reads commit nothing | Immutable content hashes, canonical snapshots, retrieval windows |
 | External source blocks or rate-limits validators | Candidate returns unavailable, does not persist adverse claim | Bounded retries with evidence-completeness checks |
@@ -23,12 +23,12 @@ Browser demo is functional and testable. GenLayer adapter is source-level only. 
 No deposits, bond slashing, transfer or escrow should be enabled without a tested deterministic ledger, owner withdrawal checks, claim-payout isolation, missed-deadline behavior, materiality criteria agreed before commitment, finality timing, cross-contract read security and real on-chain validation. Tests need to demonstrate that all balances drain after a completed round and that ambiguous evidence never penalizes an issuer.
 
 ## Known implementation limitations
-- User-facing checks do not contact source URLs; they are illustrative manual checkpoints.
+- Local showcase checks do not contact source URLs; they are illustrative manual checkpoints. The Real Network contract fetches sources inside validator execution. Its deployment and single test-only fixture cycle do not validate arbitrary issuers or guarantee future source availability.
 - `localStorage` is mutable and may be deleted; local evidence hashes are not anchored.
 - Numeric token comparison can produce false positives and misses semantic changes with no numbers; these are explicitly marked for review.
 - Demo data contains fictional projects and example.org links.
-- `contracts/Pride.py` is unverified against any live GenVM deployment; it may require SDK pin, storage, ABI, and runtime fixes.
-- Browser visual regression testing could not run in the creation environment; unit and static checks do pass locally.
+- `contracts/Pride.py` has a verified Studionet deployment and one live validator source-check result. Direct-mode tests remain mocked; broader live and adversarial testing is still required.
+- Issuer/domain ownership, authenticated amendments, challenge evidence, stable source allowlists, redirect/SSRF controls, and real deployment proof are not implemented.
 
 ## No production claims
 PRIDE presently makes no certification, financial, investment, legal or on-chain truth claim. Claims about real projects require independent evidence and appropriate appeal mechanisms.

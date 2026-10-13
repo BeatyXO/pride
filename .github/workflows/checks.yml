@@ -10,9 +10,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - run: npm ci
+      - run: npm run build
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: node --check assets/app.js && node --check assets/engine.mjs
-      - run: node --test tests/engine.test.mjs
+      - run: python -m pip install -r requirements-dev.txt
+      - run: node --check assets/app.js && node --check assets/engine.mjs && node --check assets/network.mjs && node --check assets/genlayer-client.js
+      - run: node --test tests/engine.test.mjs tests/network-sdk.test.mjs
       - run: python -m unittest discover -s tests -p '*test.py' -v
+      - run: gltest -p no:cacheprovider tests/test_contract_direct.py -v

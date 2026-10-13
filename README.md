@@ -6,27 +6,42 @@ PRIDE is **not FairDrop**: it does not flag wallets, administer airdrop appeals,
 
 ## What is implemented
 
-- Complete responsive, dependency-free website in purple/yellow/red gradients with Comic Sans styling
+- Responsive static website in purple/yellow/red gradients with Comic Sans styling and a bundled optional GenLayerJS client
 - Searchable registry, filters, dashboards, project passports, timelines
 - Working register-promise and checkpoint forms
 - Baseline-versus-checkpoint word diff and numeric/percentage/deadline detection
 - Local challenges, closed-question controls, toast notifications, export/import, SHA-256 hashes
 - Four **fictional, explicitly labeled** example projects to demonstrate UX
 - Pure comparison engine with Node.js tests
-- Prototype GenLayer Intelligent Contract source with independent web reads and outcome comparison
+- GenLayer direct-mode contract prototype for tokenomics and public fee-policy records, independent source retrieval, cited model output, and canonical SHA-256 snapshots
+- Separate GenLayerJS Studionet view with finalized-state reads and receipt-based writes to the verified deployment
+- GitHub Actions direct-mode contract tests pinned to the `genlayer-test` runner package
 - GitHub Actions smoke tests
 
 ## Important integrity boundary
 
-The **frontend is a local-only showcase**. It stores data in `localStorage` and does not sign, send, stake, transfer, fetch external evidence, or issue on-chain judgments. User-entered URLs and text are unverified. All example projects are fictional. A local SHA-256 is not a blockchain anchor.
+The **Local Showcase** stores data in `localStorage`; its forms do not sign, send, stake, transfer, fetch external evidence, or issue on-chain judgments. User-entered URLs and text are unverified. All example projects are fictional. A local SHA-256 is not a blockchain anchor. **Real Network** is an isolated GenLayerJS view connected to the verified Studionet deployment recorded in `assets/deployment.json`. It reads finalized chain data and asks the connected wallet to sign writes.
 
-The `contracts/Pride.py` file is a **network-unverified prototype**. Python syntax and source checks do not prove GenVM compatibility, live validator consensus, or security. It holds **no assets**. Real network integration must only be claimed after successfully deployed and independently verified.
+The `contracts/Pride.py` file is a prototype. It is deployed on Studionet and has completed a test-only register, source-check, authorization, and deactivation cycle. Direct-mode tests use mocked web/model responses. This does not establish issuer/domain authorization, source authenticity, production readiness, or security. The contract has no payable methods and holds no assets.
+
+## Studionet deployment proof
+
+- Chain: GenLayer Studionet, chain ID `61999`
+- Contract: `0x900B946995Cf1B8C8BcF0C6cb95B0DC0F34E6167`
+- Deployment transaction: `0x6dcbe0b63c1302ed433efb3110791cd0e1d5e7ef461401447fce67574da970b9`
+- SHA-256 of deployed source: `ae6f5bf9d4a19e74d76fa55d5ae678a4e94b691bb2419d2b8565ae06e7ccf5d8` (verified byte-for-byte against the on-chain code)
+- Test-only charter 0 was registered, checked against a public fixture, and recorded as `MATCHES` with checkpoint 0.
+- A second funded wallet received `NOT_OWNER` when attempting deactivation; the owner then deactivated the charter. The final chain state is inactive with the checkpoint retained.
+
+Two earlier deploy transactions finalized with `invalid_contract` and created no code while the runner header was being corrected. A small storage probe used to verify the Studionet SDK path also remains on the test network at `0x35e3B98a1CD38047531A4B429722897f2d92630d`; it is separate from PRIDE.
 
 ## Run
 
-No `npm install` needed.
+Build the optional GenLayerJS client once, then serve the static app:
 
 ```sh
+npm ci
+npm run build
 python3 -m http.server 8080
 # open http://localhost:8080
 ```
@@ -38,9 +53,10 @@ Alternatively serve these files from any static hosting provider or GitHub Pages
 ```sh
 node --check assets/app.js
 node --check assets/engine.mjs
-node --test tests/engine.test.mjs
+node --test tests/engine.test.mjs tests/network-sdk.test.mjs
 python3 -m unittest discover -s tests -p '*test.py' -v
 python3 -m py_compile contracts/Pride.py
+gltest -p no:cacheprovider tests/test_contract_direct.py -v
 ```
 
 ## Repo map
@@ -50,6 +66,10 @@ index.html                     The single-page app entry
 assets/style.css               Responsive product visuals
 assets/app.js                  UI views, forms, routing and events
 assets/engine.mjs              Pure comparison/backup engine
+assets/network.mjs             Isolated GenLayerJS reads and wallet writes
+assets/deployment.json         Verified Studionet deployment and lifecycle proof
+assets/genlayer-client.entry.mjs  GenLayerJS bundle entry
+assets/genlayer-client.js      Generated browser bundle
 assets/favicon.svg             Original PRIDE branding
 contracts/Pride.py             Prototype GenLayer Intelligent Contract
 contracts/README.md           Runtime assumptions and integration scope
@@ -73,9 +93,13 @@ docs/CODEX_AUTOPILOT_PROMPT.md Complete next-stage agent handoff
 
 See `docs/CODEX_AUTOPILOT_PROMPT.md` for the exact finish-to-submission work.
 
+## Current capability and remaining work
+
+The contract accepts `TOKENOMICS` and `FEES` commitments and records a source snapshot only when a structured model response includes an exact supporting excerpt and validators agree on the full result. The Real Network client supports finalized reads, wallet connection, registration, source checks, and receipt tracking on Studionet. Authenticated issuer ownership, stable-source allowlists and redirect controls, advance disclosures, and authenticated challenge evidence remain unimplemented.
+
 ## Evaluation honesty
 
-This repo contains a polished, working browser app and early contract scaffold. It is **not yet a deployed Intelligent Contract product**. No claim of independent audit, guaranteed competition ranking, or production financial safety is made.
+This repo contains a working browser app and a deployed Studionet prototype. No claim of independent audit, issuer verification, guaranteed competition ranking, or production financial safety is made.
 
 ## Sources / conceptual references
 

@@ -20,8 +20,9 @@ class StaticContractTests(unittest.TestCase):
         self.assertNotIn('public.write.payable',self.code)
         self.assertNotIn('emit_transfer(',self.code)
     def test_verdict_and_evidence_bound(self):
-        self.assertIn('theirs["text"] == mine["text"]',self.code)
-        self.assertIn('theirs["outcome"] == mine["outcome"]',self.code)
+        self.assertIn('return theirs == mine',self.code)
+        self.assertIn('hashlib.sha256(result["text"].encode("utf-8")).hexdigest()',self.code)
+        self.assertIn('result["outcome"] == "INSUFFICIENT_EVIDENCE"',self.code)
     def test_views_present(self):
         for method in ('get_charters','get_checks','get_config'):
             self.assertIn('def '+method+'(',self.code)
