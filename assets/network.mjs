@@ -1,4 +1,4 @@
-import { connectInjectedWallet, subscribeWallet } from './wallet.mjs';
+import { connectInjectedWallet, subscribeWallet, switchInjectedWalletToStudionet } from './wallet.mjs?v=studionet-switch-1';
 
 let sdkPromise;
 let configPromise;
@@ -70,6 +70,13 @@ function frame() {
     headerStatus.textContent = wrongNetwork ? 'Wrong network · switch to 61999' : connectedAddress ? `Connected · ${connectedAddress.slice(0, 6)}…${connectedAddress.slice(-4)}` : 'Wallet not connected';
     headerStatus.classList.toggle('wallet-wrong-network', wrongNetwork);
     headerStatus.title = connectedAddress ? `Connected wallet ${connectedAddress}` : 'Public records are readable without a wallet.';
+  }
+  const headerSwitch = document.getElementById('wallet-switch-network');
+  if (headerSwitch) {
+    const wrongNetwork = Boolean(connectedAddress && currentChainId && currentChainId !== '0xf22f');
+    headerSwitch.style.display = wrongNetwork ? 'inline-flex' : 'none';
+    headerSwitch.disabled = Boolean(operation?.message?.startsWith('Switching wallet'));
+    headerSwitch.textContent = headerSwitch.disabled ? 'Switching…' : 'Switch to Studionet';
   }
   if (headerAction) {
     const connecting = operation?.message?.startsWith('Connecting wallet');
@@ -294,10 +301,20 @@ export async function mountNetwork(target, notify) {
 }
 
 document.addEventListener('click', async (event) => {
-  const button = event.target.closest('button[data-network-action],button[data-network-check],button[data-network-history],button[data-network-amend],button[data-network-challenge]');
-  if (!button || (!mountedTarget?.contains(button) && button.id !== 'wallet-header-action')) return;
+  const button = event.target.closest('button[data-network-action],button[data-network-check],button[data-network-history],button[data-network-amend],button[data-network-challenge],button[data-wallet-switch]');
+  if (!button || (!mountedTarget?.contains(button) && button.id !== 'wallet-header-action' && button.id !== 'wallet-switch-network')) return;
   try {
-    if (button.dataset.networkAction === 'connect') {
+    if (button.dataset.walletSwitch !== undefined) {
+      operation = { message: 'Switching wallet to GenLayer Studionet…' };
+      frame();
+      const cfg = await deployment();
+      const provider = await discoverWallet();
+      const result = await switchInjectedWalletToStudionet(provider, cfg.rpcUrl, cfg.explorerUrl);
+      currentChainId = result.chainIdHex;
+      operation = { message: `Wallet switched to GenLayer Studionet (61999). Connected as ${connectedAddress}.` };
+      await readCharters();
+      frame();
+    } else if (button.dataset.networkAction === 'connect') {
       operation = { message: 'Connecting wallet and reading finalized registry…' };
       frame();
       await context(true);

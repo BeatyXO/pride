@@ -7,6 +7,7 @@
 
 .top-actions{flex-wrap:wrap}.wallet-header-status{color:#c9b5d4;font-size:11px;font-weight:700;white-space:nowrap}.wallet-header-status.wallet-wrong-network{color:#ffb39e}.wallet-header-button{min-height:40px;white-space:nowrap}.network .dot.local{background:#bc88e8;box-shadow:none}.wallet-open-network{white-space:nowrap}.wallet-helper{margin:8px 0 0;color:#b9a6c7;font-size:12px;line-height:1.6}.wallet-helper strong{color:#ffdc80}
 .wallet-connect-prompt{margin:18px 0}.wallet-connect-prompt h3{margin:0 0 7px}.wallet-connect-prompt p{margin:0;color:#c9b5d4;font-size:13px;line-height:1.7}
+#wallet-switch-network[hidden]{display:none!important}
 @media(max-width:920px){.top-actions{gap:8px}.wallet-header-button{min-height:38px;padding:9px 12px}}
 @media(max-width:620px){.topbar{height:auto;min-height:67px;padding:10px 14px}.top-actions{gap:7px}.network{font-size:9px;padding:7px 9px}.wallet-header-status{font-size:10px}.wallet-header-button{font-size:10px;padding:8px 10px;min-height:36px}}
 @media(max-width:480px){.topbar{justify-content:flex-end}.crumb{display:none}.top-actions{width:100%;justify-content:flex-end}.network{display:none}.wallet-header-status{margin-right:auto}}

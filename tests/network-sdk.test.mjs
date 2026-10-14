@@ -8,7 +8,7 @@ import {
   TransactionHashVariant,
   TransactionStatus,
 } from '../assets/genlayer-client.js';
-import { connectInjectedWallet, subscribeWallet } from '../assets/wallet.mjs';
+import { connectInjectedWallet, subscribeWallet, switchInjectedWalletToStudionet } from '../assets/wallet.mjs';
 import { EventEmitter } from 'node:events';
 
 test('bundled GenLayerJS client exposes the Studionet read/write lifecycle API', () => {
@@ -55,6 +55,40 @@ test('injected EIP-1193 wallet accepts Studionet and blocks another chain', asyn
   });
   await assert.rejects(connectInjectedWallet({ request: async ({ method }) => method === 'eth_requestAccounts'
     ? ['0x1111111111111111111111111111111111111111'] : '0x1' }), /Wrong wallet network/);
+});
+
+test('wrong-network control switches the injected wallet to Studionet', async () => {
+  const methods = [];
+  let chainId = '0x1';
+  const wallet = { request: async ({ method, params }) => {
+    methods.push({ method, params });
+    if (method === 'wallet_switchEthereumChain') chainId = params[0].chainId;
+    if (method === 'eth_chainId') return chainId;
+  } };
+  assert.deepEqual(await switchInjectedWalletToStudionet(wallet), { chainId: 61999, chainIdHex: '0xf22f' });
+  assert.equal(methods[0].method, 'wallet_switchEthereumChain');
+  assert.equal(methods[0].params[0].chainId, '0xf22f');
+});
+
+test('wrong-network control adds Studionet when the wallet does not know the chain', async () => {
+  const methods = [];
+  let chainId = '0x1';
+  const wallet = { request: async ({ method, params }) => {
+    methods.push({ method, params });
+    if (method === 'wallet_switchEthereumChain' && chainId !== '0xf22f') throw Object.assign(new Error('Unknown chain'), { code: 4902 });
+    if (method === 'wallet_addEthereumChain') chainId = params[0].chainId;
+    if (method === 'wallet_switchEthereumChain') chainId = params[0].chainId;
+    if (method === 'eth_chainId') return chainId;
+  } };
+  assert.deepEqual(await switchInjectedWalletToStudionet(wallet, 'https://studio.genlayer.com/api', 'https://explorer-studio.genlayer.com'), { chainId: 61999, chainIdHex: '0xf22f' });
+  assert.equal(methods[1].method, 'wallet_addEthereumChain');
+  assert.deepEqual(methods[1].params[0], {
+    chainId: '0xf22f', chainName: 'GenLayer Studionet',
+    nativeCurrency: { name: 'GEN', symbol: 'GEN', decimals: 18 },
+    rpcUrls: ['https://studio.genlayer.com/api'],
+    blockExplorerUrls: ['https://explorer-studio.genlayer.com'],
+  });
+  assert.equal(methods[2].method, 'wallet_switchEthereumChain');
 });
 
 test('wallet rejection is surfaced and account/chain events update subscribers', async () => {
