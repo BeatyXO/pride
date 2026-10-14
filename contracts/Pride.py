@@ -57,6 +57,54 @@ def _measurements(text: str) -> list[str]:
     return [re.sub(r"\s+", "", item).lower() for item in found[:40]]
 
 
+def _measurement_change(baseline_text: str, current_text: str) -> tuple[bool, str]:
+    baseline = _measurements(baseline_text)
+    current = _measurements(current_text)
+    if not baseline or baseline == current:
+        return False, ""
+    match_index = next((i for i, value in enumerate(current)
+                        if i >= len(baseline) or value != baseline[i]), None)
+    if match_index is None:
+        return True, ""
+    matches = list(re.finditer(
+        r"(?<![A-Za-z0-9])\d+(?:\.\d+)?\s*(?:%|percent\b|bps\b|basis points?\b|days?\b|weeks?\b|months?\b|years?\b|hours?\b)",
+        current_text, re.IGNORECASE))
+    if match_index >= len(matches):
+        return True, ""
+    target = matches[match_index]
+    left = current_text.rfind("\n", 0, target.start()) + 1
+    right = current_text.find("\n", target.end())
+    if right < 0:
+        right = len(current_text)
+    quote = current_text[left:right].strip()
+    if len(quote) > 240:
+        start = max(left, target.start() - 100)
+        end = min(right, target.end() + 100)
+        quote = current_text[start:end]
+    return True, quote if quote and len(quote) <= 240 else ""
+
+
+def _read_source(url: str, repo: str) -> dict:
+    """Read an admitted source without capturing storage-backed contract state."""
+    if not _source_ok(url, repo):
+        return {"ok": False, "error": "SOURCE_NOT_ADMITTED"}
+    try:
+        response = gl.nondet.web.get(url)
+        body = response.body
+        if response.status != 200 or body is None:
+            return {"ok": False, "error": "SOURCE_UNAVAILABLE"}
+        if isinstance(body, bytes):
+            body = body.decode("utf-8", errors="strict")
+        if not isinstance(body, str) or len(body.encode("utf-8")) > MAX_SOURCE_BYTES:
+            return {"ok": False, "error": "SOURCE_INVALID"}
+        body = _canonical(body)
+        if not body or "\x00" in body:
+            return {"ok": False, "error": "SOURCE_INVALID"}
+        return {"ok": True, "text": body, "digest": hashlib.sha256(body.encode("utf-8")).hexdigest()}
+    except Exception:
+        return {"ok": False, "error": "SOURCE_UNAVAILABLE"}
+
+
 @allow_storage
 @dataclass
 class Publisher:
@@ -139,44 +187,29 @@ class Pride(gl.Contract):
                 return i
         return -1
 
-    def _read_source(self, url: str, repo: str) -> dict:
-        if not _source_ok(url, repo):
-            return {"ok": False, "error": "SOURCE_NOT_ADMITTED"}
-        try:
-            response = gl.nondet.web.get(url)
-            body = response.body
-            if response.status != 200 or body is None:
-                return {"ok": False, "error": "SOURCE_UNAVAILABLE"}
-            if isinstance(body, bytes):
-                body = body.decode("utf-8", errors="strict")
-            if not isinstance(body, str) or len(body.encode("utf-8")) > MAX_SOURCE_BYTES:
-                return {"ok": False, "error": "SOURCE_INVALID"}
-            body = _canonical(body)
-            if not body or "\x00" in body:
-                return {"ok": False, "error": "SOURCE_INVALID"}
-            return {"ok": True, "text": body, "digest": hashlib.sha256(body.encode("utf-8")).hexdigest()}
-        except Exception:
-            return {"ok": False, "error": "SOURCE_UNAVAILABLE"}
-
     def _admit_source(self, url: str, repo: str) -> dict:
         """Require validators to independently retrieve the same complete source."""
         if not _source_ok(url, repo):
             return {"ok": False, "error": "SOURCE_NOT_ADMITTED"}
 
         def leader_read() -> dict:
-            return self._read_source(url, repo)
+            return _read_source(url, repo)
 
         def validator(leader_result: gl.vm.Result) -> bool:
             if not isinstance(leader_result, gl.vm.Return) or not isinstance(leader_result.calldata, dict):
                 return False
             theirs = leader_result.calldata
-            if set(theirs) != {"ok", "error", "text", "digest"}:
+            if theirs.get("ok") is True:
+                if (set(theirs) != {"ok", "text", "digest"} or not isinstance(theirs["text"], str) or
+                        len(theirs["text"].encode("utf-8")) > MAX_SOURCE_BYTES or not isinstance(theirs["digest"], str)):
+                    return False
+            elif theirs.get("ok") is False:
+                if set(theirs) != {"ok", "error"} or theirs["error"] not in (
+                        "SOURCE_NOT_ADMITTED", "SOURCE_UNAVAILABLE", "SOURCE_INVALID"):
+                    return False
+            else:
                 return False
-            if (not isinstance(theirs["ok"], bool) or not isinstance(theirs["error"], str) or
-                    not isinstance(theirs["text"], str) or len(theirs["text"].encode("utf-8")) > MAX_SOURCE_BYTES or
-                    not isinstance(theirs["digest"], str)):
-                return False
-            return theirs == self._read_source(url, repo)
+            return theirs == _read_source(url, repo)
 
         return gl.vm.run_nondet_unsafe(leader_read, validator)
 
@@ -258,13 +291,14 @@ class Pride(gl.Contract):
         publisher = self.publishers[int(charter.publisher_id)]
         if not publisher.active:
             return json.dumps({"ok": False, "error": "PUBLISHER_REVOKED"})
+        repo = str(publisher.repo)
         source_url = str(source_url)
-        if not _source_ok(source_url, str(self.publishers[int(charter.publisher_id)].repo)):
+        if not _source_ok(source_url, repo):
             return json.dumps({"ok": False, "error": "SOURCE_NOT_ADMITTED"})
         terms = str(charter.terms)
         baseline = str(charter.baseline_source)
         policy = str(charter.policy)
-        current = self._admit_source(source_url, str(publisher.repo))
+        current = self._admit_source(source_url, repo)
         if not current["ok"]:
             return json.dumps({"ok": False, "error": current["error"]})
         for previous in self.checks:
@@ -272,7 +306,7 @@ class Pride(gl.Contract):
                 return json.dumps({"ok": False, "error": "DUPLICATE_CHECKPOINT"})
 
         def compare() -> dict:
-            source = self._read_source(source_url, str(publisher.repo))
+            source = _read_source(source_url, repo)
             if not source["ok"]:
                 return {"ok": False, "error": source["error"], "text": "", "digest": "",
                         "outcome": "INSUFFICIENT_EVIDENCE", "evidence": ""}
@@ -313,19 +347,19 @@ class Pride(gl.Contract):
         result = gl.vm.run_nondet_unsafe(compare, validate)
         if not result["ok"]:
             return json.dumps({"ok": False, "error": result["error"]})
-        if result["outcome"] == "INSUFFICIENT_EVIDENCE":
-            return json.dumps({"ok": False, "error": "INSUFFICIENT_EVIDENCE"})
-        baseline_numbers = _measurements(terms)
-        current_numbers = _measurements(result["evidence"])
-        changed_numbers = bool(baseline_numbers and baseline_numbers != current_numbers)
+        changed_numbers, numeric_evidence = _measurement_change(terms, result["text"])
         outcome = result["outcome"]
-        if changed_numbers and outcome == "MATCHES":
+        evidence = result["evidence"]
+        if numeric_evidence:
             outcome = "MATERIAL_CHANGE"
-        if outcome in ("POSSIBLE_CHANGE", "MATERIAL_CHANGE") and not result["evidence"]:
+            evidence = numeric_evidence
+        if outcome == "INSUFFICIENT_EVIDENCE":
+            return json.dumps({"ok": False, "error": "INSUFFICIENT_EVIDENCE"})
+        if outcome in ("POSSIBLE_CHANGE", "MATERIAL_CHANGE") and not evidence:
             return json.dumps({"ok": False, "error": "UNSUPPORTED_FINDING"})
         self.checks.append(Checkpoint(u32(charter_id), charter.version, source_url,
                                       result["text"], result["digest"], outcome,
-                                      result["evidence"], changed_numbers))
+                                      evidence, changed_numbers))
         return json.dumps({"ok": True, "checkpoint_id": len(self.checks) - 1,
                            "outcome": outcome, "digest": result["digest"]})
 

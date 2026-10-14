@@ -4,7 +4,7 @@
 
 The local showcase is illustrative browser storage. It makes no network requests and its evidence is not chain evidence. The Real Network page targets a configured GenLayer Studionet contract and uses an injected EIP-1193 wallet for writes. A transaction is shown as accepted while pending; final success requires a finalized receipt, successful execution, and a finalized-state readback.
 
-The current contract candidate binds a publisher label and one asserted GitHub repository scope to the transaction sender address. This proves control of that wallet for the transaction. It does **not** prove control of a GitHub account, organization, project, or domain. No off-chain signature authorization is accepted, so signature replay is not part of this identity mechanism. A publisher may revoke its record; revoked wallet identities cannot be registered again in the same contract.
+The deployed contract binds a publisher label and one asserted GitHub repository scope to the transaction sender address. This proves control of that wallet for the transaction. It does **not** prove control of a GitHub account, organization, project, or domain. No off-chain signature authorization is accepted, so signature replay is not part of this identity mechanism. A publisher may revoke its record; revoked wallet identities cannot be registered again in the same contract.
 
 ## Evidence model
 
@@ -27,7 +27,7 @@ Challenges must cite a particular stored checkpoint and provide an exact quotati
 - The contract's only challenge resolution is non-adverse and inconclusive; disputes are recorded but not adjudicated.
 - Per-wallet, per-record, and per-record challenge limits bound repeated work. A source-check cooldown is not implemented.
 - Direct Mode tests use controlled mocked web/model responses. They verify contract execution paths, not live web retrieval or Studionet consensus.
-- The current Studionet source parity and deployment receipt are documented in [LIVE_EVIDENCE.md](LIVE_EVIDENCE.md). They do not establish that every live lifecycle operation has been exercised.
+- The current Studionet source parity, deployment receipt, and tested lifecycle operations are documented in [LIVE_EVIDENCE.md](LIVE_EVIDENCE.md). Browser automation with a real wallet and independent explorer indexing remain unverified.
 
 The contract has no payable functions, token transfers, bonds, slashing, or custody. Do not treat PRIDE records as legal findings, certification, or a determination of fraud.
 

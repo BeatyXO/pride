@@ -46,7 +46,7 @@ class StaticContractTests(unittest.TestCase):
             self.assertFalse(calls_named(method, "send"))
 
     def test_canonical_source_and_bounds_are_in_admission_path(self):
-        reader = self.methods["_read_source"]
+        reader = next(node for node in self.tree.body if isinstance(node, ast.FunctionDef) and node.name == "_read_source")
         self.assertTrue(calls_named(reader, "_canonical"))
         self.assertTrue(calls_named(reader, "sha256"))
         self.assertTrue(calls_named(reader, "encode"))

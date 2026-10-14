@@ -79,6 +79,7 @@ def test_source_admission_and_exact_immutable_baseline(direct_vm, direct_deploy,
     _web(direct_vm, BASE_URL, full)
     registered = json.loads(contract.register("Terms", "TOKENOMICS", BASE_URL, "Community allocation remains 30%"))
     assert registered["ok"]
+    assert direct_vm.run_validator() is True
     row = json.loads(contract.get_charters())[0]
     assert row["baseline_source"] == full.replace("\r\n", "\n")
     assert row["baseline_digest"] == registered["baseline_digest"]
@@ -104,10 +105,12 @@ def test_check_requires_owner_exact_quote_numeric_change_and_duplicate_guard(
     assert duplicate["error"] == "DUPLICATE_CHECKPOINT"
     direct_vm.clear_mocks()
     _web(direct_vm, CHANGE_URL, "Community allocation is now 15%.")
-    direct_vm.mock_llm(r".*", json.dumps({"outcome": "MATCHES", "evidence": "Community allocation is now 15%."}))
+    direct_vm.mock_llm(r".*", json.dumps({"outcome": "INSUFFICIENT_EVIDENCE", "evidence": ""}))
     changed = json.loads(contract.check_source(0, CHANGE_URL))
     assert changed["ok"] and changed["outcome"] == "MATERIAL_CHANGE"
-    assert json.loads(contract.get_checks(0))[1]["measurements_changed"] is True
+    checkpoint = json.loads(contract.get_checks(0))[1]
+    assert checkpoint["measurements_changed"] is True
+    assert checkpoint["evidence_excerpt"] == "Community allocation is now 15%."
 
 
 def test_hallucinated_quote_and_unavailable_source_never_commit(direct_vm, direct_deploy,

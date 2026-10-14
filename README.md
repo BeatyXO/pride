@@ -9,7 +9,7 @@ The original colored PRIDE mark, hero treatment, and project illustrations are p
 
 ## Contract capabilities
 
-`contracts/Pride.py` contains the current implementation candidate:
+`contracts/Pride.py` contains the deployed implementation:
 
 - Wallet-bound publisher labels with one asserted GitHub repository scope and revocation.
 - Commit-pinned raw GitHub text evidence, complete bounded source snapshots, canonical SHA-256 digests, and validator-agreed semantic checkpoints. Each follow-up check names a newer immutable source URL in the publisher's repository scope.
@@ -51,7 +51,7 @@ Never put a wallet private key or seed phrase in Vercel. The manifest records th
 
 ## Deployment status
 
-The current contract is deployed at `0xde82a7650E938D53df225fc25De61D3909Ce4393` on Studionet. Its deployment transaction `0x621ede8922db31a181ffe0f81569e962e70cf51025abdd758e3bc5d228a8974c` finalized with majority agreement. The deployed source was fetched from RPC and matched byte-for-byte: `b1f3a1df85ebebbc500bee3277826ca5e7e5491dad8b8766fd724ba5710f9083`. Initial state reads returned no publishers and no charters. See [live evidence](docs/LIVE_EVIDENCE.md) for the scope and pending lifecycle checks.
+The current contract is deployed at `0xe20273aDaaDb19B6BE34Fa5C6CfDe3B59719d4C0` on Studionet (chain ID `61999`). Deployment transaction `0x77786b21af2621d46f7253ce481948994ca513cafcc1631391be9357c5b59608` finalized with majority agreement and successful execution. RPC source retrieval matched the local contract byte-for-byte; SHA-256 is `4594532457829e48fd57bd89a7adfaf7bfa20cb3f1f478d411606af33f84de77`. A public fixture lifecycle has also been executed and independently read back. See [live evidence](docs/LIVE_EVIDENCE.md).
 
 ## CI
 
