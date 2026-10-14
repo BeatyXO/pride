@@ -4,7 +4,8 @@
   "version": "0.2.0",
   "type": "module",
   "scripts": {
-    "build": "esbuild ./assets/genlayer-client.entry.mjs --bundle --format=esm --target=es2022 --outfile=./assets/genlayer-client.js"
+    "build": "node scripts/build-deployment.mjs && esbuild ./assets/genlayer-client.entry.mjs --bundle --format=esm --target=es2022 --outfile=./assets/genlayer-client.js",
+    "test": "node --test tests/engine.test.mjs tests/network-sdk.test.mjs"
   },
   "dependencies": {
     "genlayer-js": "1.1.8"
