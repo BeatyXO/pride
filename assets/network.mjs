@@ -162,7 +162,7 @@ async function verifyWriteReadback(functionName, args, client, sdk, cfg, result)
   if (functionName === 'check_source') {
     const rows = await readContractJson(client, sdk, cfg, 'get_checks', [Number(args[0])]);
     const id = Number(result?.checkpoint_id);
-    if (!Array.isArray(rows) || !rows.some((row) => Number(row.id) === id && row.digest === result?.digest && row.source_url === args[1])) throw new Error('Checkpoint transaction finalized, but its checkpoint was not verified in state.');
+    if (!Array.isArray(rows) || !rows.some((row) => Number(row.id) === id && row.content_digest === result?.digest && row.source_url === args[1])) throw new Error('Checkpoint transaction finalized, but its checkpoint was not verified in state.');
   }
   if (functionName === 'propose_amendment') {
     const rows = await readContractJson(client, sdk, cfg, 'get_amendments', [Number(args[0])]);

@@ -47,6 +47,14 @@ test('real-network wallet path uses injected EIP-1193 without SDK Snap connect',
   assert.doesNotMatch(source, /\.connect\(['"]studionet['"]\)/);
 });
 
+test('successful check_source write readback matches result digest to get_checks content_digest', async () => {
+  const source = await readFile(new URL('../assets/network.mjs', import.meta.url), 'utf8');
+  assert.match(source, /functionName === 'check_source'[\s\S]*?readContractJson\(client, sdk, cfg, 'get_checks', \[Number\(args\[0\]\)\]\)/);
+  assert.match(source, /row\.content_digest === result\?\.digest/);
+  assert.match(source, /row\.source_url === args\[1\]/);
+  assert.doesNotMatch(source, /row\.digest === result\?\.digest/);
+});
+
 test('injected EIP-1193 wallet accepts Studionet and blocks another chain', async () => {
   const wallet = { request: async ({ method }) => method === 'eth_requestAccounts'
     ? ['0x1111111111111111111111111111111111111111'] : '0xf22f' };
