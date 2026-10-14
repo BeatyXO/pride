@@ -10,6 +10,7 @@ let operation = null;
 let walletProvider = null;
 let currentChainId = '';
 let publishers = [];
+let disconnectedByUser = false;
 const TX_KEY = 'pride-studionet-transactions-v1';
 let transactions = [];
 try { transactions = JSON.parse(localStorage.getItem(TX_KEY) || '[]').slice(0, 30); } catch { transactions = []; }
@@ -51,9 +52,9 @@ async function discoverWallet() {
   walletProvider = providers[0] || (window.ethereum?.request ? window.ethereum : null);
   if (!walletProvider) throw new Error('No injected EIP-1193 wallet was found.');
   subscribeWallet(walletProvider, {
-    accountsChanged: (address) => { connectedAddress = address; frame(); },
+    accountsChanged: (address) => { connectedAddress = disconnectedByUser ? '' : address; frame(); },
     chainChanged: (chainId) => { currentChainId = chainId; frame(); },
-    disconnect: () => { connectedAddress = ''; currentChainId = ''; frame(); },
+    disconnect: () => { connectedAddress = ''; currentChainId = ''; disconnectedByUser = true; frame(); },
   });
   return walletProvider;
 }
@@ -61,21 +62,35 @@ async function discoverWallet() {
 function frame() {
   if (!mountedTarget) return;
   const configured = mountedTarget.dataset.configured === 'true';
+  const walletReady = Boolean(connectedAddress && currentChainId === '0xf22f');
+  const headerStatus = document.getElementById('wallet-header-status');
+  const headerAction = document.getElementById('wallet-header-action');
+  if (headerStatus) {
+    const wrongNetwork = Boolean(connectedAddress && currentChainId && currentChainId !== '0xf22f');
+    headerStatus.textContent = wrongNetwork ? 'Wrong network · switch to 61999' : connectedAddress ? `Connected · ${connectedAddress.slice(0, 6)}…${connectedAddress.slice(-4)}` : 'Wallet not connected';
+    headerStatus.classList.toggle('wallet-wrong-network', wrongNetwork);
+    headerStatus.title = connectedAddress ? `Connected wallet ${connectedAddress}` : 'Public records are readable without a wallet.';
+  }
+  if (headerAction) {
+    const connecting = operation?.message?.startsWith('Connecting wallet');
+    headerAction.textContent = connecting ? 'Connecting…' : connectedAddress ? 'Disconnect' : 'Connect wallet';
+    headerAction.dataset.networkAction = connectedAddress ? 'disconnect' : 'connect';
+    headerAction.disabled = Boolean(connecting || !configured);
+    headerAction.classList.toggle('btn-outline', Boolean(connectedAddress));
+    headerAction.classList.toggle('btn-primary', !connectedAddress);
+  }
   mountedTarget.innerHTML = `
     <section class="network-hero panel">
       <span class="eyebrow">REAL NETWORK</span>
-      <h1 class="title">Verified chain <span class="gradient-text">records.</span></h1>
-      <p class="lead">This view reads only the configured GenLayer contract. Its data stays separate from the local showcase.</p>
-      <div class="network-state" role="status" aria-live="polite">${esc(operation?.message || (!configured ? 'Deployment is not configured.' : (connectedAddress ? (currentChainId && currentChainId !== '0xf22f' ? 'Wrong network. Switch your wallet to GenLayer Studionet (61999) before continuing.' : `Wallet connected: ${connectedAddress}`) : 'Read-only public records are available. Connect an injected wallet for writes.')))}</div>
-      <div class="form-actions">
-        ${configured ? `<button class="btn btn-primary" data-network-action="connect">${connectedAddress ? 'Refresh registry' : 'Connect wallet'}</button>${connectedAddress ? '<button class="btn btn-outline" data-network-action="disconnect">Disconnect</button>' : ''}` : ''}
-        ${connectedAddress ? `<span class="chip neutral">${esc(connectedAddress.slice(0, 8))}…${esc(connectedAddress.slice(-6))}</span>` : ''}
-      </div>
+      <h1 class="title">Public chain records <span class="gradient-text">you can verify.</span></h1>
+      <p class="lead">Browse finalized Studionet records without connecting. Connect a wallet to register a publisher or commitment, check sources, submit an amendment, or challenge a record. Your wallet approves every write.</p>
+      <div class="network-state" role="status" aria-live="polite">${esc(operation?.message || (!configured ? 'Deployment is not configured.' : (connectedAddress ? (currentChainId && currentChainId !== '0xf22f' ? 'Wrong network. Switch your wallet to GenLayer Studionet (chain 61999), then reconnect.' : `Connected to Studionet as ${connectedAddress}. You can use the publisher and commitment actions below.`) : 'Wallet not connected. Public records are read-only until you connect.')))}</div>
+      ${walletReady ? '' : '<p class="wallet-helper">Use <strong>Connect wallet</strong> in the top bar before writing. PRIDE never asks for your recovery phrase.</p>'}
       ${transactions.length ? `<details class="section"><summary>Wallet transaction history (${transactions.length})</summary>${transactions.map((item) => `<p><b>${esc(item.action)}</b> · ${esc(item.status)} · ${esc(item.at)} · <a class="link-action" href="https://explorer-studio.genlayer.com/tx/${encodeURIComponent(item.hash)}" target="_blank" rel="noopener noreferrer">${esc(item.hash.slice(0, 12))}… ↗</a></p>`).join('')}</details>` : ''}
     </section>
     ${!configured ? `<section class="section banner">No contract address is set in <code>assets/deployment.json</code>. PRIDE will not show demo records in Real Network mode or pretend a deployment exists.</section>` : ''}
-    ${configured ? `<section class="section"><div class="section-heading"><div><h2>Public charters</h2><p>Read at the latest finalized state.</p></div><span class="chip neutral">${records.length} records</span></div>
-      <div class="network-register panel"><h3>Publisher identity</h3><p class="hint">The signing wallet is the identity PRIDE binds on-chain. Publisher labels and GitHub repository scopes are self-asserted; they do not prove control of an organization or domain.</p>
+    ${configured ? `<section class="section"><div class="section-heading"><div><h2>Public commitments</h2><p>Finalized records are public. Connect a wallet to create or update one.</p></div><span class="chip neutral">${records.length} records</span></div>
+      ${walletReady ? `<div class="network-register panel"><h3>Publisher identity</h3><p class="hint">Your connected wallet becomes the publisher identity. Labels and repository scope are public claims; they do not prove domain ownership.</p>
         ${publishers.some((p) => p.active && p.owner?.toLowerCase() === connectedAddress.toLowerCase()) ? '<p class="chip good">Publisher registered for this wallet</p><button class="btn btn-outline" data-network-action="revoke-publisher">Revoke publisher</button>' : `<form id="network-publisher-form" class="form-grid"><div class="field"><label for="publisher-label">Publisher label *</label><input id="publisher-label" name="label" maxlength="80" required /></div><div class="field"><label for="publisher-repo">GitHub repository scope *</label><input id="publisher-repo" name="repo" placeholder="owner/repository" maxlength="100" required /></div><div class="form-actions"><button class="btn btn-primary" type="submit">Register publisher</button></div></form>`}
       </div>
       <div class="network-register panel"><h3>Register a commitment on chain</h3><p class="hint">Wallet transactions are submitted to GenLayer Studionet. Sources must be public raw GitHub text files pinned to a 40-character commit hash in the registered repository.</p>
@@ -86,8 +101,8 @@ function frame() {
           <div class="field"><label for="network-promise">Exact commitment *</label><textarea id="network-promise" name="promise" maxlength="1600" required></textarea></div>
           <div class="form-actions"><button class="btn btn-primary" type="submit">Register on GenLayer</button></div>
         </form>
-      </div>
-      <div class="network-records">${records.length ? records.map((row) => `<article class="panel network-record"><div><span class="chip neutral">${esc(row.policy_type)}</span> ${row.active ? '<span class="chip good">Active</span>' : '<span class="chip">Inactive</span>'}<h3>${esc(row.title)} · v${Number(row.version || 1)}</h3><p>${esc(row.promise)}</p><a href="${esc(row.source_url)}" target="_blank" rel="noopener noreferrer">Open recorded source ↗</a><small>Signer ${esc(row.owner)} · Baseline SHA-256 ${esc(row.baseline_digest)} · Charter ${Number(row.id)}</small></div><div class="network-record-actions"><button class="btn btn-outline" data-network-check="${Number(row.id)}" ${row.active && row.owner?.toLowerCase() === connectedAddress.toLowerCase() ? '' : 'disabled'}>Check source</button><button class="btn btn-outline" data-network-history="${Number(row.id)}">View checkpoints</button><button class="btn btn-outline" data-network-amend="${Number(row.id)}" ${row.owner?.toLowerCase() === connectedAddress.toLowerCase() ? '' : 'disabled'}>Amend</button><button class="btn btn-outline" data-network-challenge="${Number(row.id)}">Challenge</button></div></article>`).join('') : '<div class="empty">No finalized commitments are recorded at this contract.</div>'}</div>
+      </div>` : '<div class="panel wallet-connect-prompt"><h3>Connect wallet to write</h3><p>After connecting on Studionet, you can register a publisher and create commitments. Read-only records below remain available without a wallet.</p></div>'}
+      <div class="network-records">${records.length ? records.map((row) => `<article class="panel network-record"><div><span class="chip neutral">${esc(row.policy_type)}</span> ${row.active ? '<span class="chip good">Active</span>' : '<span class="chip">Inactive</span>'}<h3>${esc(row.title)} · v${Number(row.version || 1)}</h3><p>${esc(row.promise)}</p><a href="${esc(row.source_url)}" target="_blank" rel="noopener noreferrer">Open recorded source ↗</a><small>Signer ${esc(row.owner)} · Baseline SHA-256 ${esc(row.baseline_digest)} · Charter ${Number(row.id)}</small></div><div class="network-record-actions"><button class="btn btn-outline" data-network-check="${Number(row.id)}" ${walletReady && row.active && row.owner?.toLowerCase() === connectedAddress.toLowerCase() ? '' : 'disabled'}>Check source</button><button class="btn btn-outline" data-network-history="${Number(row.id)}">View checkpoints</button><button class="btn btn-outline" data-network-amend="${Number(row.id)}" ${walletReady && row.owner?.toLowerCase() === connectedAddress.toLowerCase() ? '' : 'disabled'}>Amend</button><button class="btn btn-outline" data-network-challenge="${Number(row.id)}" ${walletReady ? '' : 'disabled'}>Challenge</button></div></article>`).join('') : '<div class="empty">No finalized commitments are recorded at this contract.</div>'}</div>
       <div id="network-checkpoints" class="section" aria-live="polite"></div>
     </section>` : ''}`;
 }
@@ -100,6 +115,7 @@ async function context(requireWallet = false) {
   if (requireWallet) {
     const provider = await discoverWallet();
     const connection = await connectInjectedWallet(provider);
+    disconnectedByUser = false;
     connectedAddress = connection.address;
     currentChainId = connection.chainIdHex;
     const chain = { ...sdk.studionet, rpcUrls: { default: { http: [cfg.rpcUrl || 'https://studio.genlayer.com/api'] } }, blockExplorers: { default: { name: 'GenLayer Studionet Explorer', url: cfg.explorerUrl || 'https://explorer-studio.genlayer.com' } } };
@@ -279,7 +295,7 @@ export async function mountNetwork(target, notify) {
 
 document.addEventListener('click', async (event) => {
   const button = event.target.closest('button[data-network-action],button[data-network-check],button[data-network-history],button[data-network-amend],button[data-network-challenge]');
-  if (!button || !mountedTarget?.contains(button)) return;
+  if (!button || (!mountedTarget?.contains(button) && button.id !== 'wallet-header-action')) return;
   try {
     if (button.dataset.networkAction === 'connect') {
       operation = { message: 'Connecting wallet and reading finalized registry…' };
@@ -290,7 +306,9 @@ document.addEventListener('click', async (event) => {
       frame();
     } else if (button.dataset.networkAction === 'disconnect') {
       connectedAddress = '';
-      operation = { message: 'Wallet disconnected from this page.' };
+      currentChainId = '';
+      disconnectedByUser = true;
+      operation = { message: 'Disconnected from PRIDE on this site. Manage wallet permissions in your wallet settings.' };
       frame();
     } else if (button.dataset.networkAction === 'revoke-publisher') {
       await submit('revoke_publisher', []);
