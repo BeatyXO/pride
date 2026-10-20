@@ -32,7 +32,7 @@ Direct Mode uses controlled source/model fixtures. It does not prove public-netw
 
 ## Studionet and Vercel
 
-Target network is Studionet, chain `61999` (`0xF22F`), RPC `https://studio.genlayer.com/api`. `assets/deployment.json` intentionally contains no active V1 contract address yet. V0.3 metadata is historical only. Configure the public Vercel build variables after V1 deployment:
+Target network is Studionet, chain `61999` (`0xF22F`), RPC `https://studio.genlayer.com/api`. V0.3 metadata is historical only. Set these public Vercel build variables for the verified V1 deployment:
 
 | Variable | Value |
 | --- | --- |
@@ -40,15 +40,15 @@ Target network is Studionet, chain `61999` (`0xF22F`), RPC `https://studio.genla
 | `PRIDE_CHAIN_ID` | `61999` |
 | `PRIDE_RPC_URL` | `https://studio.genlayer.com/api` |
 | `PRIDE_EXPLORER_URL` | `https://explorer-studio.genlayer.com` |
-| `PRIDE_CONTRACT_ADDRESS` | Final V1 Studionet contract address |
-| `PRIDE_DEPLOYMENT_TRANSACTION` | Final V1 deployment transaction hash |
-| `PRIDE_SOURCE_SHA256` | SHA-256 of the exact deployed `contracts/Pride.py` bytes |
-| `PRIDE_RELIANCE_GATE_ADDRESS` | Final Reliance Gate Studionet address |
-| `PRIDE_RELIANCE_GATE_DEPLOYMENT_TRANSACTION` | Final Reliance Gate deployment transaction hash |
-| `PRIDE_RELIANCE_GATE_SOURCE_SHA256` | SHA-256 of the exact deployed `contracts/pride_reliance_gate.py` bytes |
+| `PRIDE_CONTRACT_ADDRESS` | `0xB8e8013A25a61CC0deD62621AaCA116B8F7aD03d` |
+| `PRIDE_DEPLOYMENT_TRANSACTION` | `0x3e409db1629e2ff4acb8b85c72557a84ce0350eb2605aa4ccfb25906df1a7a52` |
+| `PRIDE_SOURCE_SHA256` | `6b5a466b87eb99def3a11d6c60e00cbb6524383c8b08b7f1dd6bd6b96c8b5b8c` |
+| `PRIDE_RELIANCE_GATE_ADDRESS` | `0xab5c9eFb60bd75F71260d085b6b4002430214a4e` |
+| `PRIDE_RELIANCE_GATE_DEPLOYMENT_TRANSACTION` | `0x40e04e31f66d4b5533713628ce027c4a229cd7bd48c3cdf6036bbf776be8545a` |
+| `PRIDE_RELIANCE_GATE_SOURCE_SHA256` | `cd9772002cd95069f387f234ce2aa62cd999eb4bd83f87a3b4ffb82b0a42bb59` |
 
 The Vercel build writes the configured manifest into `public/assets/deployment.json` and requires verified metadata for both contracts. Set the build command to `npm run build` and output directory to `public` (both are recorded in `vercel.json`). Never put a private key or seed phrase in Vercel. See [live evidence status](docs/LIVE_EVIDENCE.md).
 
 ## Release status
 
-V1 is not yet deployed. The RPC responded during this release attempt with chain ID `0xf22f` and a current block number. No V1 address, deployment transaction, source parity, lifecycle transaction evidence, or Vercel URL is claimed. GitHub CI status does not establish live network release verification. The previous V0.3 deployment is retained in the manifest and live evidence record as historical context only. The milestone branch is `milestone/pride-v1-adjudication`; no merge to `main` is implied.
+Pride V1 and its Reliance Gate are deployed and finalized on Studionet. Their active addresses, deployment transactions, and exact local source hashes are recorded in `assets/deployment.json`; `docs/LIVE_EVIDENCE.md` records receipts and state readbacks. The live Pride lifecycle has verified publisher/charter registration, a matching baseline, a material-change checkpoint, and an authorized version-2 amendment. A Gate authorization is still `PROPOSING` with no majority or leader assigned. Challenge, rebuttal, resolution/expiry, unauthorized rejection, and finalized Gate decision evidence remain incomplete. The previous V0.3 deployment is historical only. The milestone branch is `milestone/pride-v1-adjudication`; no merge to `main` is implied.

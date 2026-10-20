@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import {
@@ -20,14 +21,20 @@ test('bundled GenLayerJS client exposes the Studionet read/write lifecycle API',
   assert.equal(TransactionStatus.FINALIZED, 'FINALIZED');
 });
 
-test('real network manifest does not present a prototype as the V1 deployment', async () => {
+test('real network manifest identifies the verified Pride V1 and Reliance Gate deployments', async () => {
   const file = new URL('../assets/deployment.json', import.meta.url);
   const config = JSON.parse(await readFile(file, 'utf8'));
+  const prideSource = await readFile(new URL('../contracts/Pride.py', import.meta.url));
+  const gateSource = await readFile(new URL('../contracts/pride_reliance_gate.py', import.meta.url));
   assert.equal(config.network, 'studionet');
   assert.equal(config.chainId, 61999);
-  assert.equal(config.contractAddress, undefined);
-  assert.equal(config.deploymentTransaction, undefined);
-  assert.equal(config.sourceSha256, undefined);
+  assert.match(config.contractAddress, /^0x[0-9a-fA-F]{40}$/);
+  assert.match(config.deploymentTransaction, /^0x[0-9a-fA-F]{64}$/);
+  assert.equal(config.sourceSha256, createHash('sha256').update(prideSource).digest('hex'));
+  assert.match(config.relianceGateAddress, /^0x[0-9a-fA-F]{40}$/);
+  assert.match(config.relianceGateDeploymentTransaction, /^0x[0-9a-fA-F]{64}$/);
+  assert.equal(config.relianceGateSourceSha256, createHash('sha256').update(gateSource).digest('hex'));
+  assert.notEqual(config.contractAddress, config.previousPrototype.contractAddress);
   assert.equal(config.previousPrototype.contractAddress, '0x900B946995Cf1B8C8BcF0C6cb95B0DC0F34E6167');
   assert.equal(config.previousPrototype.lifecycleVerification.sourceCheckOutcome, 'MATCHES');
   assert.equal(config.previousPrototype.lifecycleVerification.finalActive, false);

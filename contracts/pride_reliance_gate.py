@@ -41,8 +41,10 @@ class PrideRelianceGate(gl.Contract):
     operator: Address
     decisions: DynArray[GateDecision]
 
-    def __init__(self, pride_address: str, charter_id: int, expected_version: int):
-        self.pride_address = Address(pride_address)
+    def __init__(self, pride_address: Address, charter_id: int, expected_version: int):
+        # The GenLayer CLI's argument parser sends a hex address as Address,
+        # while Direct Mode fixtures pass a string. Accept both representations.
+        self.pride_address = pride_address if isinstance(pride_address, Address) else Address(pride_address)
         self.charter_id = u32(charter_id)
         self.expected_version = u32(expected_version)
         self.operator = gl.message.sender_address
