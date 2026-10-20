@@ -1,0 +1,47 @@
+{
+  "status": "incomplete_not_ready_for_submission",
+  "auditedSourceCommit": "f5f17ec1aedeb9542ba8cf6e0ee6b843abad1b88",
+  "auditedSourceTree": "d2f7cab4651daabe00a19a519046498f87bd9fb7",
+  "network": {
+    "name": "GenLayer Studionet",
+    "chainId": 61999,
+    "rpcUrl": "https://studio.genlayer.com/api"
+  },
+  "contracts": [
+    {
+      "name": "Pride",
+      "path": "contracts/Pride.py",
+      "address": "0x1A232b6eb69484B29f9Fc9A0Fa06c927083726e9",
+      "deploymentTransaction": "0x431f90c4dfa57aadbe38480df2fbfcdafffbe7777596391d1fac8ad225520302",
+      "sourceSha256": "9518a7f7b31c015e6c406e4577768b8a6af9bbefa55b1de4439f61e85c3a3504"
+    },
+    {
+      "name": "PrideRelianceGate",
+      "path": "contracts/pride_reliance_gate.py",
+      "address": "0x5cEeD74e1465da8D962C1DAe98903F72089E0A18",
+      "deploymentTransaction": "0x796c3b7972a66045b806470362032a7b9f182a0820be6372a934dc1132eaaa60",
+      "sourceSha256": "0465495b95c2afb9a833496f40becbea91daaf907e7c50af77ca50084a218c3f"
+    }
+  ],
+  "evidenceFiles": [
+    "docs/live-lifecycle-case-v1.json",
+    "docs/LIVE_EVIDENCE.md",
+    "docs/MILESTONE_BASELINE.md",
+    "docs/MILESTONE_COMPARISON.md",
+    "docs/MILESTONE_V1_FREEZE.md",
+    "docs/TEST_MATRIX_V1.md",
+    "docs/REVIEWER_V1.md",
+    "docs/SUBMISSION_V1.md",
+    "assets/deployment.json"
+  ],
+  "gateFailure": {
+    "transaction": "0x3b9d1ec683b4315a42bd7c7fc877548090551d2b60ebf0720afebd8fed3cf058",
+    "actionId": "pride-v1-upheld-case-reject-20261020",
+    "status": "FINALIZED",
+    "consensus": "NO_MAJORITY",
+    "leaderExecution": "ERROR",
+    "error": "LEADER_EXEC_TIMEOUT",
+    "timeoutSeconds": 600,
+    "decisionReadback": []
+  }
+}

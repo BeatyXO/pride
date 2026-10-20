@@ -5,7 +5,8 @@ __pycache__/
 .env.*
 node_modules/
 .pytest_cache/
-artifacts/
+artifacts/*
+!artifacts/milestone-v1-inventory.json
 .coverage
 coverage/
 playwright-report/

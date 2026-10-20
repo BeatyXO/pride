@@ -11,6 +11,7 @@ This document reports only transactions and checks that were actually verified. 
 - Both deployment receipts finalized with `MAJORITY_AGREE` and leader execution `SUCCESS`. Independent config reads and deployed-source parity checks succeeded.
 - Current local source SHA-256: Pride `9518a7f7b31c015e6c406e4577768b8a6af9bbefa55b1de4439f61e85c3a3504`; Gate `0465495b95c2afb9a833496f40becbea91daaf907e7c50af77ca50084a218c3f`.
 - Gate config binds to the new Pride address, charter `0`, expected version `2`, and operator `0xD6423aE82a975d55C6CeaC222827A727325e0459`.
+- Fresh CLI schema reads show Pride `get_reliance_status(charter_id:int) -> string` and Gate `authorize(action_id:string) -> any`, `get_config() -> string`, and `get_decisions(offset:int,limit:int) -> string`. The declared Pride view signature in the Gate's typed interface matches. This callable-schema match does not prove successful on-chain internal-call execution.
 
 ## Verified Pride lifecycle
 
@@ -22,7 +23,7 @@ Unauthorized Gate-operator and unauthorized rebuttal submissions finalized succe
 
 ## Reliance Gate limitation
 
-The authorized Gate call `0x6e67f5a18588a03fa0f563797542a17d5a4e8120816a920985967e1871acee98` finalized without majority (`NO_MAJORITY`) after leader execution timed out at 600 seconds (`LEADER_EXEC_TIMEOUT`). Independent `get_decisions` readback remains `[]`. The live cross-contract authorization path is therefore **not verified**. The frontend manifest keeps Gate writes disabled until that behavior is verified. No Gate decision is claimed.
+The authorized Gate call `0x6e67f5a18588a03fa0f563797542a17d5a4e8120816a920985967e1871acee98` finalized without majority (`NO_MAJORITY`) after leader execution timed out at 600 seconds (`LEADER_EXEC_TIMEOUT`). A second authorized call, transaction `0x3b9d1ec683b4315a42bd7c7fc877548090551d2b60ebf0720afebd8fed3cf058`, for action `pride-v1-upheld-case-reject-20261020`, also finalized `NO_MAJORITY` with leader `ERROR`, `Leader execution exceeded 600.000s`, and `LEADER_EXEC_TIMEOUT`. The receipt reports leader model `policy:prd-gpt-5-4` via provider `llm-router`. The configured RPC rejects `gen_dbg_traceTransaction` as unavailable, so the inner execution trace could not be retrieved. After the second finalized receipt, an independent `get_decisions(0,50)` call returned `[]`. The live cross-contract authorization path is therefore **not verified**; these attempts are failure evidence and produce neither `PERMITTED` nor `REJECTED` decisions. The frontend manifest keeps Gate writes disabled. No Gate decision is claimed.
 
 ## Frontend and build verification
 

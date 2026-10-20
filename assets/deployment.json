@@ -24,6 +24,27 @@
     "timeoutSeconds": 600,
     "decisionsReadback": []
   },
+  "gateLiveAttempts": [
+    {
+      "transactionHash": "0x6e67f5a18588a03fa0f563797542a17d5a4e8120816a920985967e1871acee98",
+      "status": "FINALIZED",
+      "consensus": "NO_MAJORITY",
+      "leaderExecution": "ERROR",
+      "error": "LEADER_EXEC_TIMEOUT",
+      "timeoutSeconds": 600,
+      "decisionReadback": []
+    },
+    {
+      "transactionHash": "0x3b9d1ec683b4315a42bd7c7fc877548090551d2b60ebf0720afebd8fed3cf058",
+      "actionId": "pride-v1-upheld-case-reject-20261020",
+      "status": "FINALIZED",
+      "consensus": "NO_MAJORITY",
+      "leaderExecution": "ERROR",
+      "error": "LEADER_EXEC_TIMEOUT",
+      "timeoutSeconds": 600,
+      "decisionReadback": []
+    }
+  ],
   "v1DeploymentEvidence": {
     "prideStatus": "FINALIZED",
     "prideExecution": "SUCCESS",
