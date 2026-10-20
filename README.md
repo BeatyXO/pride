@@ -51,4 +51,4 @@ The Vercel build writes the configured manifest into `public/assets/deployment.j
 
 ## Release status
 
-V1 is not yet deployed. The RPC responded during this release attempt with chain ID `0xf22f` and a current block number. No V1 address, deployment transaction, source parity, lifecycle transaction evidence, GitHub CI run, or Vercel URL is claimed. The previous V0.3 deployment is retained in the manifest and live evidence record as historical context only. The milestone branch is `milestone/pride-v1-adjudication`; no merge to `main` is implied.
+V1 is not yet deployed. The RPC responded during this release attempt with chain ID `0xf22f` and a current block number. No V1 address, deployment transaction, source parity, lifecycle transaction evidence, or Vercel URL is claimed. GitHub CI status does not establish live network release verification. The previous V0.3 deployment is retained in the manifest and live evidence record as historical context only. The milestone branch is `milestone/pride-v1-adjudication`; no merge to `main` is implied.
