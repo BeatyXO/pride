@@ -16,6 +16,6 @@
 2. No live Gate `PERMITTED` or `REJECTED` outcome is established.
 3. Only the live `UPHELD` adjudication outcome is documented. Live `REJECTED` and `INCONCLUSIVE` adjudications are outstanding.
 4. A public Vercel production deployment and genuine injected-wallet browser transaction test are not verified.
-5. A new CI run for the final documentation commit is still required after push.
+5. The first pushed release-evidence commit `248745bb5549e144860cdf0a308aed9ba83e5369` has two successful `static-and-unit` runs and a successful Vercel Preview Comments context; its Vercel deployment context failed. The account-authenticated deployment logs remain uninspected. Check PR #1 for current-head runs.
 
 Reviewer conclusion: **not ready for submission** until these blockers are closed and their evidence is independently reproducible.

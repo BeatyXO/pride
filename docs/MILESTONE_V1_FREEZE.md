@@ -2,7 +2,7 @@
 
 ## Frozen source checkpoint
 
-This freeze records the audited contract code at milestone commit `f5f17ec1aedeb9542ba8cf6e0ee6b843abad1b88`, tree `d2f7cab4651daabe00a19a519046498f87bd9fb7`. The current audit changed documentation only after this source checkpoint. It is not a final GitHub HEAD freeze: documentation fixes still need a new commit and push.
+This freeze records the audited contract code at milestone commit `f5f17ec1aedeb9542ba8cf6e0ee6b843abad1b88`, tree `d2f7cab4651daabe00a19a519046498f87bd9fb7`. Follow-on changes in this audit update release documentation and evidence only; the two contract source files remain unchanged. This manifest freezes the contract source bytes, while the final repository HEAD and baseline-to-final comparison are reported on PR #1.
 
 | File | SHA-256 | Deployed address | Manifest source parity |
 | --- | --- | --- | --- |

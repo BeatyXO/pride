@@ -14,6 +14,6 @@
 | Browser wallet | Existing `tests/network-sdk.test.mjs` injects a mocked EIP-1193 provider | Mocked provider behaviors covered in unit tests | Genuine DOM/browser wallet signing |
 | Local frontend DOM | In-app browser at `http://127.0.0.1:8080/#/network`; opened “View evidence & cases” and expanded commitment version history | Live-read V2 commitment, both checkpoints, amendment, and `UPHELD` case appeared; disclosure control expanded | Wallet connection, signing, or public hosting |
 | Vercel | Existing branch check context failed; local Vercel-mode build now succeeds | Hosted production is unverified | Public production URL and live browser flow |
-| GitHub CI | On audited commit, earlier status showed `static-and-unit` pass; current documentation patch has not run CI | Fresh final commit status unknown | Final green CI |
+| GitHub CI | On source commit `f5f17ec1aedeb9542ba8cf6e0ee6b843abad1b88`, earlier status showed `static-and-unit` pass. On release-evidence commit `248745bb5549e144860cdf0a308aed9ba83e5369`, both new `static-and-unit` runs passed and Vercel Preview Comments passed; the Vercel deployment context failed. | The precise Vercel failure details require Vercel authentication. | Check PR #1 for current-head results; Vercel production is not verified. |
 
 The repository's simulator and EIP-1193 unit tests are identified as simulated evidence; neither is represented as a real-network or real-browser result.

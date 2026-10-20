@@ -38,7 +38,7 @@ The baseline has no separate Reliance Gate. The current Pride and Gate addresses
 - `python -m pytest -q`: 27/27 passed.
 - `VERCEL=1 npm run build`: passed and produced the configured `public` output directory. The un-elevated attempt was blocked by workspace access; the rerun with workspace access passed.
 - These checks do not establish live Gate decisions, browser-wallet signing, a hosted Vercel production deployment, or fresh GitHub CI.
-- Previously observed GitHub checks for the audited commit: `static-and-unit` passed and `Vercel Preview Comments` passed; the Vercel deployment context failed. The failure details and any later rerun have not been verified in this audit.
+- For the first release-evidence commit `248745bb5549e144860cdf0a308aed9ba83e5369`, both GitHub `static-and-unit` runs completed successfully and `Vercel Preview Comments` passed; the Vercel deployment context failed. Its details were inaccessible without Vercel account authentication. Check PR #1 for results on any later HEAD.
 
 ## Disposition
 
