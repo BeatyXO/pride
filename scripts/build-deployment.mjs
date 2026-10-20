@@ -13,6 +13,7 @@ const stringOverrides = [
   ['PRIDE_EXPLORER_URL', 'explorerUrl'],
   ['PRIDE_DEPLOYMENT_TRANSACTION', 'deploymentTransaction'],
   ['PRIDE_SOURCE_SHA256', 'sourceSha256'],
+  ['PRIDE_RELIANCE_GATE_ADDRESS', 'relianceGateAddress'],
 ];
 for (const [name, key] of stringOverrides) {
   if (env[name]?.trim()) manifest[key] = env[name].trim();
@@ -27,6 +28,9 @@ if (manifest.network !== 'studionet' || manifest.chainId !== 61999) {
 }
 if (manifest.contractAddress && !/^0x[0-9a-fA-F]{40}$/.test(manifest.contractAddress)) {
   throw new Error('PRIDE_CONTRACT_ADDRESS must be a 20-byte hex address.');
+}
+if (manifest.relianceGateAddress && !/^0x[0-9a-fA-F]{40}$/.test(manifest.relianceGateAddress)) {
+  throw new Error('PRIDE_RELIANCE_GATE_ADDRESS must be a 20-byte hex address.');
 }
 if (env.VERCEL === '1' && !manifest.contractAddress) throw new Error('Set PRIDE_CONTRACT_ADDRESS to the deployed contract address before deploying to Vercel.');
 if (env.VERCEL === '1' && !/^0x[0-9a-fA-F]{64}$/.test(manifest.deploymentTransaction || '')) {

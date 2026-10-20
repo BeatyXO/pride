@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import {
@@ -21,19 +20,18 @@ test('bundled GenLayerJS client exposes the Studionet read/write lifecycle API',
   assert.equal(TransactionStatus.FINALIZED, 'FINALIZED');
 });
 
-test('real network manifest keeps the old prototype separate from the active deployment', async () => {
+test('real network manifest does not present a prototype as the V1 deployment', async () => {
   const file = new URL('../assets/deployment.json', import.meta.url);
   const config = JSON.parse(await readFile(file, 'utf8'));
-  const source = await readFile(new URL('../contracts/Pride.py', import.meta.url));
-  const sourceHash = createHash('sha256').update(source).digest('hex');
   assert.equal(config.network, 'studionet');
   assert.equal(config.chainId, 61999);
-  assert.match(config.contractAddress, /^0x[0-9a-fA-F]{40}$/);
-  assert.match(config.deploymentTransaction, /^0x[0-9a-fA-F]{64}$/);
-  assert.equal(config.sourceSha256, sourceHash);
+  assert.equal(config.contractAddress, undefined);
+  assert.equal(config.deploymentTransaction, undefined);
+  assert.equal(config.sourceSha256, undefined);
   assert.equal(config.previousPrototype.contractAddress, '0x900B946995Cf1B8C8BcF0C6cb95B0DC0F34E6167');
   assert.equal(config.previousPrototype.lifecycleVerification.sourceCheckOutcome, 'MATCHES');
   assert.equal(config.previousPrototype.lifecycleVerification.finalActive, false);
+  assert.equal(config.previousV03Deployment.status, 'historical-prototype-not-the-v1-deployment');
 });
 
 test('real-network wallet path uses injected EIP-1193 without SDK Snap connect', async () => {
@@ -53,6 +51,21 @@ test('successful check_source write readback matches result digest to get_checks
   assert.match(source, /row\.content_digest === result\?\.digest/);
   assert.match(source, /row\.source_url === args\[1\]/);
   assert.doesNotMatch(source, /row\.digest === result\?\.digest/);
+});
+
+test('real network frontend exposes permissionless observation and consensus case lifecycle', async () => {
+  const source = await readFile(new URL('../assets/network.mjs', import.meta.url), 'utf8');
+  assert.match(source, /data-network-observe/);
+  assert.match(source, /submit\('observe_source'/);
+  assert.match(source, /row\.observer\?\.toLowerCase\(\) === address/);
+  assert.match(source, /submit\('adjudicate_challenge'/);
+  assert.match(source, /submit\('expire_challenge'/);
+  assert.doesNotMatch(source, /submit\('resolve_challenge'/);
+  assert.match(source, /get_standing/);
+  assert.match(source, /get_versions/);
+  assert.match(source, /LATEST_FINAL/);
+  assert.match(source, /relianceGateAddress/);
+  assert.match(source, /get_decisions/);
 });
 
 test('injected EIP-1193 wallet accepts Studionet and blocks another chain', async () => {

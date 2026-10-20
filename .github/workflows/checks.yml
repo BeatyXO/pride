@@ -20,6 +20,7 @@ jobs:
       - run: node --check assets/app.js && node --check assets/engine.mjs && node --check assets/network.mjs && node --check assets/wallet.mjs && node --check assets/genlayer-client.js
       - run: node scripts/verify-deployment.mjs
       - run: python -m unittest discover -s tests -p '*test.py' -v
-      - run: python -m py_compile contracts/Pride.py
+      - run: python -m py_compile contracts/Pride.py contracts/pride_reliance_gate.py
       - run: genvm-lint lint contracts/Pride.py
-      - run: gltest -p no:cacheprovider tests/test_contract_direct.py -v
+      - run: genvm-lint lint contracts/pride_reliance_gate.py
+      - run: gltest -p no:cacheprovider tests/test_contract_direct.py tests/test_reliance_gate_direct.py -v

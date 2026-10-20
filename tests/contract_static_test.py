@@ -30,7 +30,7 @@ class StaticContractTests(unittest.TestCase):
         self.assertEqual(self.contract.name, "Pride")
 
     def test_nondeterministic_comparison_is_validator_scoped(self):
-        checker = self.methods["check_source"]
+        checker = self.methods["_record_checkpoint"]
         consensus = calls_named(checker, "run_nondet_unsafe")
         self.assertTrue(consensus)
         self.assertTrue(any(any(isinstance(arg, ast.Name) and arg.id == "compare" for arg in call.args) and

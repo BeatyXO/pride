@@ -1,11 +1,8 @@
 {
   "network": "studionet",
   "chainId": 61999,
-  "contractAddress": "0xe20273aDaaDb19B6BE34Fa5C6CfDe3B59719d4C0",
   "rpcUrl": "https://studio.genlayer.com/api",
   "explorerUrl": "https://explorer-studio.genlayer.com",
-  "deploymentTransaction": "0x77786b21af2621d46f7253ce481948994ca513cafcc1631391be9357c5b59608",
-  "sourceSha256": "4594532457829e48fd57bd89a7adfaf7bfa20cb3f1f478d411606af33f84de77",
   "previousPrototype": {
     "contractAddress": "0x900B946995Cf1B8C8BcF0C6cb95B0DC0F34E6167",
     "deploymentTransaction": "0x6dcbe0b63c1302ed433efb3110791cd0e1d5e7ef461401447fce67574da970b9",
@@ -21,5 +18,11 @@
       "ownerDeactivationTransaction": "0x22f1aa8c54bf5d0f362deb9a0458e2b8539abc3e9740d81eabf0842eea45fb4f",
       "finalActive": false
     }
+  },
+  "previousV03Deployment": {
+    "contractAddress": "0xe20273aDaaDb19B6BE34Fa5C6CfDe3B59719d4C0",
+    "deploymentTransaction": "0x77786b21af2621d46f7253ce481948994ca513cafcc1631391be9357c5b59608",
+    "sourceSha256": "4594532457829e48fd57bd89a7adfaf7bfa20cb3f1f478d411606af33f84de77",
+    "status": "historical-prototype-not-the-v1-deployment"
   }
 }
