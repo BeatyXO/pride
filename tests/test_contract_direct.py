@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 CONTRACT = Path(__file__).resolve().parents[1] / "contracts" / "Pride.py"
-GENVM_RELEASE = "v0.2.12"
+GENVM_RELEASE = "v0.2.16"
 REPO = "pride-fixtures/commitments"
 COMMIT = "a" * 40
 BASE_URL = f"https://raw.githubusercontent.com/{REPO}/{COMMIT}/baseline.txt"

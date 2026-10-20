@@ -14,7 +14,7 @@ Review [the security model](docs/SECURITY.md), [product and architecture](docs/P
 
 ## Local checks
 
-Required tools: GenLayer CLI `0.39.1`, GenVM baseline `v0.2.12`, GenVM lint `0.11.0`, and GenLayer Direct Mode test tooling listed in `requirements-dev.txt`.
+Required tools: GenLayer CLI `0.39.1`, GenVM runner marker `v0.2.16` in both deployable contracts, GenVM lint `0.11.0`, and GenLayer Direct Mode test tooling listed in `requirements-dev.txt`.
 
 ```sh
 npm ci
@@ -43,10 +43,12 @@ Target network is Studionet, chain `61999` (`0xF22F`), RPC `https://studio.genla
 | `PRIDE_CONTRACT_ADDRESS` | Final V1 Studionet contract address |
 | `PRIDE_DEPLOYMENT_TRANSACTION` | Final V1 deployment transaction hash |
 | `PRIDE_SOURCE_SHA256` | SHA-256 of the exact deployed `contracts/Pride.py` bytes |
-| `PRIDE_RELIANCE_GATE_ADDRESS` | Optional deployed Reliance Gate address for its read/write panel |
+| `PRIDE_RELIANCE_GATE_ADDRESS` | Final Reliance Gate Studionet address |
+| `PRIDE_RELIANCE_GATE_DEPLOYMENT_TRANSACTION` | Final Reliance Gate deployment transaction hash |
+| `PRIDE_RELIANCE_GATE_SOURCE_SHA256` | SHA-256 of the exact deployed `contracts/pride_reliance_gate.py` bytes |
 
-The build deliberately fails on Vercel until the address, transaction, and final source hash are supplied. Never put a private key or seed phrase in Vercel. See [live evidence status](docs/LIVE_EVIDENCE.md).
+The Vercel build writes the configured manifest into `public/assets/deployment.json` and requires verified metadata for both contracts. Set the build command to `npm run build` and output directory to `public` (both are recorded in `vercel.json`). Never put a private key or seed phrase in Vercel. See [live evidence status](docs/LIVE_EVIDENCE.md).
 
 ## Release status
 
-V1 is not yet deployed. No V1 address, deployment transaction, source parity, lifecycle transaction evidence, GitHub CI run, or Vercel URL is claimed. The previous V0.3 deployment is retained in the manifest and live evidence record as historical context only. The milestone branch is `milestone/pride-v1-adjudication`; no merge to `main` is implied.
+V1 is not yet deployed. The RPC responded during this release attempt with chain ID `0xf22f` and a current block number. No V1 address, deployment transaction, source parity, lifecycle transaction evidence, GitHub CI run, or Vercel URL is claimed. The previous V0.3 deployment is retained in the manifest and live evidence record as historical context only. The milestone branch is `milestone/pride-v1-adjudication`; no merge to `main` is implied.

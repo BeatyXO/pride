@@ -1,6 +1,6 @@
 # PRIDE Intelligent Contract candidate
 
-`Pride.py` is an intentionally asset-free standalone GenLayer contract prototype, not a deployed release. The direct-mode suite pins GenVM runner release `v0.2.12`; the contract's dependency hash is declared in its header.
+`Pride.py` is an intentionally asset-free standalone GenLayer contract prototype, not a deployed release. The direct-mode suite and both contract headers pin GenVM runner release `v0.2.16`; the contract dependency hash is declared in each header.
 
 ## Calls
 

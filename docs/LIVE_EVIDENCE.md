@@ -2,7 +2,7 @@
 
 ## V1 milestone status
 
-V1 has not been deployed. No V1 contract address, deployment transaction, finalized receipt, deployed-source SHA-256, source parity readback, state readback, case lifecycle transactions, Reliance Gate deployment, browser wallet transaction, or Vercel URL is claimed. The `assets/deployment.json` manifest intentionally leaves the active V1 address unset; Vercel deployment validation therefore fails until real V1 deployment evidence and matching public environment variables are supplied.
+V1 has not been deployed. During the release attempt, `eth_chainId` returned `0xf22f` and `eth_blockNumber` returned `0x6ad74d7a` from `https://studio.genlayer.com/api`; this confirms RPC connectivity and chain identity only. A local CLI deploy attempt stopped at an invalid keystore password and returned no transaction hash, so no deployment was broadcast or verified. No V1 contract address, deployment transaction, finalized receipt, deployed-source SHA-256, source parity readback, state readback, case lifecycle transactions, Reliance Gate deployment, browser wallet transaction, or Vercel URL is claimed. The `assets/deployment.json` manifest intentionally leaves the active V1 address unset; Vercel deployment validation therefore fails until real V1 deployment evidence and matching public environment variables are supplied.
 
 ## Historical V0.3 deployment
 
@@ -16,4 +16,4 @@ The following is retained for audit context only. It is not the V1 contract and 
 
 ## Required V1 release evidence
 
-After deploying the final source with the pinned CLI and an explicitly configured authorized account, record the finalized deployment transaction and result, fetch deployed source bytes and compare them byte-for-byte, compute source SHA-256, independently read the V1 config/state, then execute and verify publisher registration, commitment registration, permissionless observation, adjudication, amendment, rebuttal, expiry, unauthorized rejection, and Reliance Gate cross-contract read. Add each real transaction hash and finalized execution status here. Browser wallet integration should also be exercised with a user-controlled injected wallet; mocked EIP-1193 tests are not that evidence.
+After deploying both final sources with the pinned CLI and explicitly selected authorized accounts, record each finalized deployment transaction and result, fetch deployed source bytes and compare them byte-for-byte, compute source SHA-256, independently read each config/state, then execute and verify publisher registration, commitment registration, successful observation, material change, authorized amendment, evidence-backed challenge, rebuttal, resolution or expiry, unauthorized-action rejection, and Reliance Gate cross-contract read. Add each real transaction hash and finalized execution status here. Browser wallet integration should also be exercised with a user-controlled injected wallet; mocked EIP-1193 tests are not that evidence.

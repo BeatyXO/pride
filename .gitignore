@@ -10,3 +10,4 @@ artifacts/
 coverage/
 playwright-report/
 test-results/
+public/
