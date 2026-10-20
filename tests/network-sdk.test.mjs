@@ -124,10 +124,27 @@ test('wallet rejection is surfaced and account/chain events update subscribers',
   const provider = new EventEmitter();
   let account = '';
   let chain = '';
-  const remove = subscribeWallet(provider, { accountsChanged: (value) => { account = value; }, chainChanged: (value) => { chain = value; } });
+  let disconnected = false;
+  const remove = subscribeWallet(provider, { accountsChanged: (value) => { account = value; }, chainChanged: (value) => { chain = value; }, disconnect: () => { disconnected = true; } });
   provider.emit('accountsChanged', ['0x2222222222222222222222222222222222222222']);
   provider.emit('chainChanged', '0xf22f');
   assert.equal(account, '0x2222222222222222222222222222222222222222');
   assert.equal(chain, '0xf22f');
+  provider.emit('accountsChanged', []);
+  assert.equal(account, '', 'an empty accountsChanged event disconnects the wallet');
+  provider.emit('disconnect', { code: 4900 });
+  assert.equal(disconnected, true, 'provider disconnect events reach the wallet lifecycle handler');
   remove();
+  assert.equal(provider.listenerCount('accountsChanged'), 0);
+  assert.equal(provider.listenerCount('chainChanged'), 0);
+  assert.equal(provider.listenerCount('disconnect'), 0);
+});
+
+test('real-network writes track transaction status and require finalized state readback', async () => {
+  const source = await readFile(new URL('../assets/network.mjs', import.meta.url), 'utf8');
+  assert.match(source, /client\.writeContract\([\s\S]*?functionName,[\s\S]*?args/);
+  assert.match(source, /rememberTransaction\(\{ hash: txHash, action: functionName, args, status: 'ACCEPTED'/);
+  assert.match(source, /waitForTransactionReceipt\(\{ hash: txHash, status: sdk\.TransactionStatus\.FINALIZED/);
+  assert.match(source, /verifyWriteReadback\(functionName, args, client, sdk, cfg, result\)/);
+  assert.match(source, /FINALIZED_READBACK_PENDING|FINALIZED_READBACK_UNVERIFIED/);
 });
