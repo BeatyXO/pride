@@ -1,0 +1,91 @@
+{
+  "network": "GenLayer Studionet",
+  "chainId": 61999,
+  "rpcUrl": "https://studio.genlayer.com/api",
+  "prideAddress": "0x1A232b6eb69484B29f9Fc9A0Fa06c927083726e9",
+  "gateAddress": "0x5cEeD74e1465da8D962C1DAe98903F72089E0A18",
+  "issuerAddress": "0xd6423ae82a975d55c6ceac222827a727325e0459",
+  "challengerAddress": "0xdafec147d24f5fbe1e540e228cfe017b6e5c5a2f",
+  "fixtureCommit": "9ab1a76c784b525671bc5bc3f9873b8bf581a23e",
+  "completedAtUtc": "2026-10-20T21:29:14.4403811Z",
+  "unauthorizedGateDecisionCountBefore": 0,
+  "unauthorizedGateDecisionCountAfter": 0,
+  "transactions": [
+    {
+      "label": "unauthorized_gate_operator",
+      "transactionHash": "0xd25f123e9ebbfc3fbd7715b8094ba62ec4c9b4a67930e05bfd47136d49292e76",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leaderExecution": "SUCCESS"
+    },
+    {
+      "label": "open_evidence_challenge",
+      "transactionHash": "0x8a7fc4ac04a50e86c6d1643eb8968c66c8068723b9dd8dcbf180bc45780655c5",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leaderExecution": "SUCCESS"
+    },
+    {
+      "label": "unauthorized_rebuttal",
+      "transactionHash": "0x323de845a917d94bc58c1d9c44372d6a942cc2a1ea0ae08f867ac36a1ecefeda",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leaderExecution": "SUCCESS"
+    },
+    {
+      "label": "authorized_rebuttal",
+      "transactionHash": "0x27118bf605523201c2e1db833b136f964061f7bbdaeaa720c94db8e25286274b",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leaderExecution": "SUCCESS"
+    },
+    {
+      "label": "consensus_case_resolution",
+      "transactionHash": "0x939851804448b21eb653d5de2db4eadab10ba0f2fd6c567828255ad42bb48a3b",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leaderExecution": "SUCCESS"
+    }
+  ],
+  "challenge": {
+    "id": 0,
+    "case_id": "7cd18c05ea0c80dc9bc39007ff31c5b90bb4a4cc84eaae4a6f46839e685d5c29",
+    "charter_id": 0,
+    "checkpoint_id": 1,
+    "version": 1,
+    "challenger": "0xdaFEC147D24f5FbE1e540e228CFe017b6e5c5a2f",
+    "issuer": "0xD6423aE82a975d55C6CeaC222827A727325e0459",
+    "evidence_url": "https://raw.githubusercontent.com/BeatyXO/pride/9ab1a76c784b525671bc5bc3f9873b8bf581a23e/tests/fixtures/commitments/changed.txt",
+    "evidence_digest": "f06bb2b09923a2a86b59cb212983a3faa29a2ac5849bc27c8aef1b00f5a2b309",
+    "evidence_role": "PUBLISHER_DECLARED_REPOSITORY",
+    "evidence_quote": "Community allocation is now 15%.",
+    "rebuttal_url": "https://raw.githubusercontent.com/BeatyXO/pride/9ab1a76c784b525671bc5bc3f9873b8bf581a23e/tests/fixtures/commitments/rebuttal.txt",
+    "rebuttal_digest": "bc270a060bdaf97f9112946d24a46296f39d2308a572adc9891aa8556509e501",
+    "rebuttal_role": "PUBLISHER_DECLARED_REPOSITORY",
+    "rebuttal_quote": "The 15% allocation applies to the community category described in the original commitment.",
+    "baseline_digest": "2ba9dacb3032f97ca330ab7fc2954dda23ac613135bb98bf4f6bdcea45955701",
+    "checkpoint_digest": "f06bb2b09923a2a86b59cb212983a3faa29a2ac5849bc27c8aef1b00f5a2b309",
+    "checkpoint_outcome": "MATERIAL_CHANGE",
+    "policy": "TOKENOMICS",
+    "terms": "Community allocation remains 30%.",
+    "status": "UPHELD",
+    "verdict": "UPHELD",
+    "finding_code": "MATERIAL_DEVIATION",
+    "citation_role": "CHECKPOINT",
+    "citation": "Community allocation is now 15%.",
+    "opened_at": 1792531550,
+    "rebuttal_at": 1792531641,
+    "expires_at": 1795123550,
+    "adjudicated_at": 1792531696
+  },
+  "standing": {
+    "ok": true,
+    "charter_id": 0,
+    "version": 2,
+    "active": true,
+    "standing": "MATERIAL_DEVIATION_ESTABLISHED",
+    "case_count": 1,
+    "policy_version": "PRIDE_STANDING_V1"
+  },
+  "gateDecisions": []
+}

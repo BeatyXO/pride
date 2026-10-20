@@ -5,9 +5,9 @@ This record freezes the requested comparison point before V1 implementation. It 
 ## Git identity
 
 - Baseline commit: `1537599fa4bb68df6d1fbb07b47c028c4eff31bc`
-- Baseline tree: `3145a55dfdc25b6bdabf9c9d29abf03a873ba702`
+- Baseline tree: `1f771f2de05fd0fbeb63e95b864116ab59275bef` (verified with `git rev-parse 1537599fa4bb68df6d1fbb07b47c028c4eff31bc^{tree}`)
 - Local branch created from that exact commit: `milestone/pride-v1-adjudication`
-- Remote `main` fetch was attempted before changes but could not be verified because GitHub was unreachable and the sandbox denied writing `.git/FETCH_HEAD`. The local commit identity matches the requested baseline exactly.
+- The local baseline commit object and tree are present and match the requested comparison point. The baseline source fingerprint below was recomputed from the commit's Git blob.
 - Baseline contract: `contracts/Pride.py`, SHA-256 `4594532457829e48fd57bd89a7adfaf7bfa20cb3f1f478d411606af33f84de77`.
 
 ## Deployment at baseline

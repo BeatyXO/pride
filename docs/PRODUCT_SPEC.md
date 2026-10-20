@@ -25,7 +25,11 @@ The issuer has a one-hour rebuttal window before an unrebutted case may be adjud
 
 ## Reliance Gate
 
-`PrideRelianceGate` is a separate, non-custodial contract bound at construction to a PRIDE address, charter ID, and expected version. Only its operator may request an action decision. It performs a typed cross-contract `get_standing` view at `LATEST_FINAL`, permits only active commitments with the expected version and `OBSERVED` standing, and writes unique bounded decision IDs. It does not custody funds or execute the gated external action. Direct Mode tests simulate the cross-contract RPC return; live Studionet integration remains unverified.
+`PrideRelianceGate` is a separate, non-custodial contract bound at construction to a PRIDE address, charter ID, and expected version. Only its operator may request an action decision. It performs a typed cross-contract `get_reliance_status` view at `LATEST_FINAL` and permits only an active commitment with the expected version, a current-version `MATCHES` checkpoint, source and captured-content integrity, publisher-repository scope, and no open, rebutted, upheld, inconclusive, or expired case. Missing evidence fails closed. `get_standing` remains a distinct adjudication view; `OBSERVED` alone never grants eligibility. The local simulator integration executes the actual Pride contract view, but does not establish Studionet compatibility.
+
+Permissionless observations are independent wallet actions within the issuer's self-asserted repository scope. They improve reproducibility and expose disagreements, but do not create an independent authority registry or prove repository ownership. Third-party evidence remains labeled unverified and cannot alone support an upheld finding. A `MATCHES` checkpoint may be challenged when it has a verified exact citation, allowing adjudication of a cited false match; a match without a citation cannot be admitted as a challenge case.
+
+The issuer can rebut only strictly before `opened_at + 3600` seconds. The opening timestamp and 30-day expiry are fixed by the challenge transaction and cannot be extended by the issuer. At the one-hour deadline the case is eligible for adjudication, not rebuttal.
 
 ## UI trust labels
 

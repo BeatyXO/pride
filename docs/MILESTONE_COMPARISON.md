@@ -2,30 +2,21 @@
 
 ## Comparison point
 
-- Requested baseline commit: `1537599fa4bb68df6d1fbb07b47c028c4eff31bc` (verified as remote `main` before implementation)
-- Baseline tree: `3145a55dfdc25b6bdabf9c9d29abf03a873ba702`
+- Baseline commit: `1537599fa4bb68df6d1fbb07b47c028c4eff31bc`
+- Verified baseline tree: `1f771f2de05fd0fbeb63e95b864116ab59275bef`
 - Baseline `contracts/Pride.py` SHA-256: `4594532457829e48fd57bd89a7adfaf7bfa20cb3f1f478d411606af33f84de77`
 - Milestone branch: `milestone/pride-v1-adjudication`
 
-## Functional changes
+The baseline has no Reliance Gate contract. Its Pride source SHA-256 above was recomputed from the Git blob at the baseline commit. The requested comparison uses this exact commit, not the parent commit/tree.
 
-| Area | Baseline | Milestone branch |
-| --- | --- | --- |
-| Observations | Issuer-only source checks | Permissionless immutable source observations with wallet, source role, version, digest, full snapshot and recorded time |
-| Case resolution | Caller-selectable closure shim; no adjudication | Validator-consensus `UPHELD`, `REJECTED`, or `INCONCLUSIVE`; independent evidence re-fetch; digest and exact citation agreement; one open case per commitment; timeout recovery |
-| History | Amendment records without independent version query | Append-only commitment version snapshots and bounded `get_versions` view |
-| Standing | No canonical standing view | Finalized-derived standing with explicit precedence and preserved earlier adverse outcome |
-| Composability | No consumer contract | Separate non-custodial Reliance Gate reading `LATEST_FINAL`, expected version, active status and standing |
-| Frontend | Narrow read/write path for prototype contract | Displays standing, observations, provenance, version history, rebuttal/adjudication/expiry workflows and optional configured Gate decisions; checks finalized state |
-| Deployment metadata | V0.3 marked active | Historical V0.3 preserved; V1 active address intentionally unset until actually deployed |
+## Scope delta
 
-## Candidate source fingerprints
+The milestone adds publisher-scoped observations, immutable source snapshots, append-only charter versions, case capsules and adjudication, expiry, canonical standing, transaction readback in the real-network frontend, and a separate Reliance Gate. Local tests exercise those behaviors, but simulator and Direct Mode results are not live Studionet proof.
 
-- `contracts/Pride.py`: SHA-256 `BD26C3193346B4DDF2B75DB5E66CC8241AC9E3A1F7EFA99ACED50DD8AC311F2B`
-- `contracts/pride_reliance_gate.py`: SHA-256 `CCED84CC79E3C7595323FF2E6F0F2CDD41642609D16D9F8A41B5CF9925F7ACD2`
+## Current release disposition
 
-These are local candidate fingerprints, not deployed-source parity evidence. Recompute after any source edits and record remote parity only after actual deployment.
+The earlier Pride and Gate deployment receipts remain historical and valid for their deployed source fingerprints. This audit changes both contracts, so those addresses no longer represent the checked-out source. The current source requires new source-matched deployments. The frontend build now marks writes disabled on source mismatch and rejects Vercel production builds until both deployed contract fingerprints match.
 
-## Validation at handoff
+Live Reliance Gate authorization is still unproven: two previous transactions finalized `NO_MAJORITY` after a leader execution timeout. Receipt inspection confirms `LEADER_EXEC_TIMEOUT`; the configured RPC does not implement `gen_dbg_traceTransaction`, so internal GenVM trace output could not be retrieved. The deployed schema and pinned v0.2.16 runtime interface were inspected; the typed address, method signature, string return, and `LATEST_FINAL` state value are supported by the cached runtime implementation. This narrows the issue but does not identify its exact root cause.
 
-The local validation commands and their final counts are reported in the release response. Direct Mode mocks source/model/network-return data; it does not prove live Studionet consensus or cross-contract execution. The browser inspection used local HTTP and no injected wallet transaction. No CI run or Vercel deployment is claimed until the branch is published and configured with real V1 deployment metadata.
+The final source fingerprints, deployment outcomes, tests, comparison and freeze package are maintained in `docs/MILESTONE_V1_COMPARISON.md`, `docs/MILESTONE_V1_FREEZE.md`, `docs/LIVE_EVIDENCE_V1.md`, and `artifacts/milestone-v1-*` after generation. No READY FOR SUBMISSION status is implied while live scenarios, production Vercel, final CI, and user-signed deployment transactions remain outstanding.

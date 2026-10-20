@@ -563,8 +563,10 @@ class Pride(gl.Contract):
         if charter_id < 0 or charter_id >= len(self.charters) or checkpoint_id < 0 or checkpoint_id >= len(self.checks):
             return json.dumps({"ok": False, "error": "NOT_FOUND"})
         check = self.checks[checkpoint_id]
-        if int(check.charter_id) != charter_id or check.outcome not in ("POSSIBLE_CHANGE", "MATERIAL_CHANGE"):
+        if int(check.charter_id) != charter_id or check.outcome not in ("MATCHES", "POSSIBLE_CHANGE", "MATERIAL_CHANGE"):
             return json.dumps({"ok": False, "error": "CHECKPOINT_NOT_CHALLENGEABLE"})
+        if check.outcome == "MATCHES" and not str(check.evidence).strip():
+            return json.dumps({"ok": False, "error": "MATCH_CHECKPOINT_NEEDS_CITATION"})
         charter = self.charters[charter_id]
         if charter.owner == gl.message.sender_address:
             return json.dumps({"ok": False, "error": "ISSUER_CANNOT_CHALLENGE"})
@@ -613,7 +615,9 @@ class Pride(gl.Contract):
         if challenge.issuer != gl.message.sender_address:
             return json.dumps({"ok": False, "error": "NOT_OWNER"})
         now = _now()
-        if (challenge.status != "OPEN" or now > int(challenge.expires_at) or
+        rebuttal_deadline = min(int(challenge.opened_at) + REBUTTAL_WINDOW_SECONDS,
+                                int(challenge.expires_at))
+        if (challenge.status != "OPEN" or now >= rebuttal_deadline or
                 not isinstance(evidence_quote, str) or not evidence_quote.strip() or len(evidence_quote) > 240):
             return json.dumps({"ok": False, "error": "INVALID_STATE_OR_EVIDENCE"})
         evidence_repo = _source_repo(evidence_url)
@@ -906,6 +910,57 @@ class Pride(gl.Contract):
         return json.dumps({"ok": True, "charter_id": charter_id, "version": int(charter.version),
                            "active": bool(charter.active), "standing": standing,
                            "case_count": len(statuses), "policy_version": "PRIDE_STANDING_V1"})
+
+    @gl.public.view
+    def get_reliance_status(self, charter_id: int) -> str:
+        """Return fail-closed evidence eligibility for a downstream reliance decision."""
+        if charter_id < 0 or charter_id >= len(self.charters):
+            return json.dumps({"ok": False, "error": "NOT_FOUND"})
+        charter = self.charters[charter_id]
+        latest_id = -1
+        for checkpoint_id, checkpoint in enumerate(self.checks):
+            if int(checkpoint.charter_id) == charter_id and int(checkpoint.version) == int(charter.version):
+                latest_id = checkpoint_id
+        if latest_id < 0:
+            return json.dumps({"ok": True, "eligible": False, "reason": "NO_CURRENT_VERSION_CHECKPOINT",
+                               "version": int(charter.version), "active": bool(charter.active),
+                               "standing": "OBSERVED", "checkpoint_id": -1,
+                               "checkpoint_version": -1, "checkpoint_outcome": "", "checkpoint_digest": "",
+                               "source_matches": False, "content_matches": False, "blocking_cases": []})
+        checkpoint = self.checks[latest_id]
+        publisher = self.publishers[int(charter.publisher_id)]
+        publisher_active = bool(publisher.active)
+        source_matches = (publisher_active and checkpoint.source_role == "PUBLISHER_DECLARED_REPOSITORY" and
+                          _source_ok(str(checkpoint.source_url), str(publisher.repo)))
+        content_matches = (hashlib.sha256(str(checkpoint.source_text).encode("utf-8")).hexdigest() ==
+                           str(checkpoint.digest))
+        blocking_cases = [str(item.status) for item in self.challenges
+                          if int(item.charter_id) == charter_id and str(item.status) in
+                          ("OPEN", "REBUTTED", "UPHELD", "INCONCLUSIVE", "EXPIRED")]
+        if not charter.active:
+            reason = "INACTIVE_COMMITMENT"
+        elif not publisher_active:
+            reason = "PUBLISHER_REVOKED"
+        elif not source_matches:
+            reason = "SOURCE_AUTHORITY_MISMATCH"
+        elif not content_matches:
+            reason = "CHECKPOINT_INTEGRITY_MISMATCH"
+        elif blocking_cases:
+            reason = "DISQUALIFYING_CASE"
+        elif checkpoint.outcome != "MATCHES":
+            reason = "LATEST_CHECKPOINT_NOT_MATCHES"
+        else:
+            reason = "QUALIFYING_FINALIZED_MATCH"
+        standing_state = json.loads(self.get_standing(charter_id))
+        return json.dumps({"ok": True, "eligible": reason == "QUALIFYING_FINALIZED_MATCH",
+                           "reason": reason, "version": int(charter.version),
+                           "active": bool(charter.active),
+                           "standing": standing_state.get("standing", ""),
+                           "checkpoint_id": latest_id, "checkpoint_version": int(checkpoint.version),
+                           "checkpoint_outcome": str(checkpoint.outcome),
+                           "checkpoint_digest": str(checkpoint.digest),
+                           "source_matches": source_matches, "content_matches": content_matches,
+                           "blocking_cases": blocking_cases})
 
     @gl.public.view
     def get_config(self) -> str:

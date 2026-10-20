@@ -2,6 +2,7 @@
 import json
 import os
 import re
+import pytest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -247,6 +248,54 @@ def test_caller_cannot_choose_outcome_and_terminal_adjudication_is_immutable(
     assert json.loads(contract.adjudicate_challenge(0))["error"] == "TERMINAL_CASE"
     direct_vm.sender = direct_alice
     assert json.loads(contract.rebut_challenge(0, CHANGE_URL, changed))["error"] == "INVALID_STATE_OR_EVIDENCE"
+
+
+@pytest.mark.parametrize(("delta", "accepted"), [(-1, True), (0, False), (1, False)])
+def test_rebuttal_is_limited_to_strictly_before_one_hour_deadline(direct_vm, direct_deploy,
+                                                                  direct_alice, direct_bob,
+                                                                  monkeypatch, delta, accepted):
+    contract = _deploy(direct_deploy, direct_vm, monkeypatch)
+    _publisher(contract, direct_vm, direct_alice)
+    baseline = "Community allocation remains 30%."
+    changed = "Community allocation is now 15%."
+    _web(direct_vm, BASE_URL, baseline)
+    _web(direct_vm, CHANGE_URL, changed)
+    _web(direct_vm, REBUTTAL_URL, "Issuer response: the source is out of date.")
+    direct_vm.sender = direct_alice
+    assert json.loads(contract.register("Terms", "TOKENOMICS", BASE_URL, baseline))["ok"]
+    direct_vm.mock_llm(r"Allowed outcomes: MATCHES", json.dumps({"outcome": "MATERIAL_CHANGE", "evidence": changed}))
+    assert json.loads(contract.check_source(0, CHANGE_URL))["ok"]
+    direct_vm.sender = direct_bob
+    assert json.loads(contract.open_challenge(0, 0, CHANGE_URL, changed))["ok"]
+    before = json.loads(contract.get_challenges(0))[0]
+    deadline = before["opened_at"] + 3600
+    direct_vm.warp(datetime.fromtimestamp(deadline + delta, timezone.utc).isoformat())
+    direct_vm.sender = direct_alice
+    result = json.loads(contract.rebut_challenge(0, REBUTTAL_URL, "Issuer response: the source is out of date."))
+    assert result["ok"] is accepted, (result, direct_vm._traces)
+    after = json.loads(contract.get_challenges(0))[0]
+    assert after["opened_at"] == before["opened_at"]
+    assert after["expires_at"] == before["expires_at"]
+
+
+def test_valid_MATCHES_checkpoint_can_be_challenged_with_verified_quote(direct_vm, direct_deploy,
+                                                                        direct_alice, direct_bob,
+                                                                        monkeypatch):
+    contract = _deploy(direct_deploy, direct_vm, monkeypatch)
+    _publisher(contract, direct_vm, direct_alice)
+    baseline = "Community allocation remains 30%."
+    changed = "Community allocation is now 15%."
+    _web(direct_vm, BASE_URL, baseline)
+    _web(direct_vm, CHANGE_URL, changed)
+    direct_vm.sender = direct_alice
+    assert json.loads(contract.register("Terms", "TOKENOMICS", BASE_URL, baseline))["ok"]
+    direct_vm.mock_llm(r"Allowed outcomes: MATCHES", json.dumps({"outcome": "MATCHES", "evidence": baseline}))
+    checked = json.loads(contract.check_source(0, BASE_URL))
+    assert checked["outcome"] == "MATCHES"
+    direct_vm.sender = direct_bob
+    challenged = json.loads(contract.open_challenge(0, checked["checkpoint_id"], CHANGE_URL, changed))
+    assert challenged["ok"]
+    assert json.loads(contract.get_challenges(0))[0]["checkpoint_outcome"] == "MATCHES"
 
 
 def test_permissionless_observation_records_observer_and_keeps_issuer_path_restricted(

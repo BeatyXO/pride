@@ -1,44 +1,46 @@
-# Deployment and live evidence
+# PRIDE V1 live evidence and release status
 
-## V1 deployment
+This document reports only transactions and checks that were actually verified. Detailed case readback is in [`live-lifecycle-case-v1.json`](live-lifecycle-case-v1.json). Local tests and mocked browser checks are not live-chain evidence.
 
-- Network: GenLayer Studionet, chain `61999` (`0xF22F`), RPC `https://studio.genlayer.com/api`.
-- CLI: GenLayer `0.39.1`; contract runner marker: `v0.2.16`.
-- Pride: `0xB8e8013A25a61CC0deD62621AaCA116B8F7aD03d`; deployment transaction `0x3e409db1629e2ff4acb8b85c72557a84ce0350eb2605aa4ccfb25906df1a7a52`; receipt `FINALIZED`; leader execution `SUCCESS`; result `MAJORITY_AGREE`.
-- Pride source SHA-256 (exact local file bytes): `6b5a466b87eb99def3a11d6c60e00cbb6524383c8b08b7f1dd6bd6b96c8b5b8c`. `genlayer code` returned a source string beginning with the exact local source bytes; only the CLI's two trailing output newlines followed it.
-- Pride independent reads: `get_config` reported product `PRIDE`, version `1.0.0`, and `STUDIONET_MILESTONE`; initial `get_publishers` and `get_charters` returned empty lists before lifecycle writes.
-- Reliance Gate: `0xab5c9eFb60bd75F71260d085b6b4002430214a4e`; deployment transaction `0x40e04e31f66d4b5533713628ce027c4a229cd7bd48c3cdf6036bbf776be8545a`; receipt `FINALIZED`; leader execution `SUCCESS`; result `MAJORITY_AGREE`.
-- Gate source SHA-256 (exact local file bytes): `cd9772002cd95069f387f234ce2aa62cd999eb4bd83f87a3b4ffb82b0a42bb59`; deployed source matched the exact local source bytes.
-- Gate independent `get_config`: bound to Pride above, charter `0`, expected version `2`, operator `0xD6423aE82a975d55C6CeaC222827A727325e0459`, required standing `OBSERVED`.
+## Network and deployments
 
-The initial Gate deployment attempt `0x6c2934ff58639d10a2b76da94c637d20e7f6bbb5fd73f241110d27afa3facb51` finalized with leader execution `ERROR` because the CLI passed the Pride address as an `Address` object while the constructor expected a string. That failed address, `0x1B219A2B45d667e03C1eE5E919d5667db1902f92`, is not an active contract. The Gate constructor was corrected to accept the typed address; Direct Mode and lint passed before the successful deployment above.
+- Network: GenLayer Studionet, chain ID `61999` (`0xF22F`), RPC `https://studio.genlayer.com/api`.
+- CLI: `0.39.1`; deployed GenVM runner marker: `v0.2.16`.
+- Pride: `0x1A232b6eb69484B29f9Fc9A0Fa06c927083726e9`; deployment transaction `0x431f90c4dfa57aadbe38480df2fbfcdafffbe7777596391d1fac8ad225520302`.
+- Reliance Gate: `0x5cEeD74e1465da8D962C1DAe98903F72089E0A18`; deployment transaction `0x796c3b7972a66045b806470362032a7b9f182a0820be6372a934dc1132eaaa60`.
+- Both deployment receipts finalized with `MAJORITY_AGREE` and leader execution `SUCCESS`. Independent config reads and deployed-source parity checks succeeded.
+- Current local source SHA-256: Pride `9518a7f7b31c015e6c406e4577768b8a6af9bbefa55b1de4439f61e85c3a3504`; Gate `0465495b95c2afb9a833496f40becbea91daaf907e7c50af77ca50084a218c3f`.
+- Gate config binds to the new Pride address, charter `0`, expected version `2`, and operator `0xD6423aE82a975d55C6CeaC222827A727325e0459`.
 
-## Live Pride lifecycle evidence
+## Verified Pride lifecycle
 
-- Publisher registration transaction `0xc6cdd555f25628ac4b41ccf28f67afaae2c664a4f35773a26cd78febd724b36f`: `FINALIZED`, read back publisher `0` with owner `0xD6423aE82a975d55C6CeaC222827A727325e0459`, asserted scope `BeatyXO/pride`.
-- A first charter transaction `0x96d4154502c908c9da79e5d9cc8032b2b8df934e5c5e4e4b9ca193e5e71468ac` finalized but failed execution because the CLI call included one extra argument. No charter was written; `get_charters` remained empty.
-- Corrected charter registration transaction `0xd5bede0b5459469c79eaa8bffb76cd12db310908ea22c6bd121f3bdb5be57a98`: `FINALIZED`, leader execution `SUCCESS`; charter `0` read back active at version `1`, terms `Community allocation remains 30%.`, source digest `2ba9dacb3032f97ca330ab7fc2954dda23ac613135bb98bf4f6bdcea45955701`.
-- Baseline verification transaction `0x19fdc186d7b3da84078a53e22da7baea34035f15a10876f6fd76f4e02ce84718`: `FINALIZED`; checkpoint `0` read back as `MATCHES`, version `1`, with matching source digest.
-- Changed-source transaction `0x26c4a9be7387a5d628c7fa44598715aadc1dbb5b64c203b54f5c36421f101f94`: `FINALIZED`; checkpoint `1` read back as `MATERIAL_CHANGE`, version `1`, because the pinned fixture changed the community allocation from `30%` to `15%`.
-- An authorized amendment was proposed from the pinned `amended.txt` and `notice.txt` fixtures; amendment record `0` was read back as pending activation. Its transaction hash was not retained in the CLI output, so no hash is claimed here.
-- Amendment activation transaction `0x1e384c07912b845bd9baf11d3a3ec4c913c1276d044f54001c9e124b6b626369`: `FINALIZED`, leader execution `SUCCESS`; `get_charters` and `get_versions` read back version `2` with amended terms `Community allocation is amended to 15%.`; `get_standing(0)` returned `OBSERVED`, active, version `2` before the Gate test.
+The live lifecycle registered a publisher and charter, observed a matching baseline, detected a material change from a 30% to 15% community allocation, activated an authorized version-2 amendment, and independently read back the version-2 current-source `MATCHES` state. The current charter is active at version `2`; its digest is `d12554e1c8982fba640fc75b96e2b19d0d0d6d819c3f7093bfd72ba768c0a0df`.
 
-## Live case lifecycle evidence
+An evidence-backed challenge was opened against checkpoint `1`, rebutted by the issuer, and resolved by consensus as `UPHELD` / `MATERIAL_DEVIATION`. The case ID is `7cd18c05ea0c80dc9bc39007ff31c5b90bb4a4cc84eaae4a6f46839e685d5c29`. The challenge, rebuttal, and resolution transactions and independent reads are recorded in the JSON evidence file. Final standing reads `MATERIAL_DEVIATION_ESTABLISHED` at version `2`.
 
-- The specified Studionet RPC returned chain ID `0xf22f` (61999) before lifecycle writes. A user-authorized funded test signer imported through the GenLayer CLI masked prompt; its derived address is `0x77e2EdBb43277bf772e207C517dde731935ffbA5` and the CLI reported `977.00569999999999989 GEN` at the time of verification. The private key was not written to this repository or passed as a command argument.
-- Challenge transaction `0xfb680affa475e4cad08a1a57283b7ed6cd421649b00b43ca18ba5dedba91f1a5`: `FINALIZED`, leader execution `SUCCESS`, `MAJORITY_AGREE`. Challenger `0x77e2EdBb43277bf772e207C517dde731935ffbA5` opened case `a89c99319097580e9df6e82183d406ac149c62dc3d89b2f637f839073a719f53` against checkpoint `1` (version `1`) using the pinned `changed.txt` evidence and exact quote `Community allocation is now 15%.` Independent `get_challenges(0)` readback recorded digest `f06bb2b09923a2a86b59cb212983a3faa29a2ac5849bc27c8aef1b00f5a2b309` and status `OPEN`.
-- Unauthorized rebuttal transaction `0x432eeb5520caf8045df10a2dae121cb90b948ede6a03b4f6bf38e34def6129b4`: finalized with leader execution `SUCCESS` and `MAJORITY_AGREE`; it was sent by the non-issuer challenger. The independent challenge readback remained `OPEN` with empty rebuttal fields, confirming no unauthorized state change. The CLI receipt does not expose the contract's returned JSON error payload, so this evidence records the rejected state transition rather than claiming a separately observed `NOT_OWNER` response value.
-- Issuer rebuttal transaction `0x11290cf305b4724d23ccfcdfdd67fd9532bde937a8dc6120bc202625bb328c49`: `FINALIZED`, leader execution `SUCCESS`, `MAJORITY_AGREE`. Owner `0xD6423aE82a975d55C6CeaC222827A727325e0459` cited the pinned `rebuttal.txt`; independent `get_challenges(0)` recorded rebuttal digest `bc270a060bdaf97f9112946d24a46296f39d2308a572adc9891aa8556509e501` and status `REBUTTED`.
-- Consensus adjudication transaction `0x675de74ff25f033c5236c41157cec0af83688edb4ba6d741e542867fae69746d`: `FINALIZED`, leader execution `SUCCESS`, `MAJORITY_AGREE`. Independent `get_challenges(0)` readback recorded terminal status/verdict `UPHELD`, finding `MATERIAL_DEVIATION`, citation role `CHECKPOINT`, and exact citation `Community allocation is now 15%.`; `get_standing(0)` returned `MATERIAL_DEVIATION_ESTABLISHED`, active, version `2`.
-- Earlier Gate authorization transaction `0x18f6b6c686cc3103e133edf2935dc7777ad837d3631882c5e570fc3ab3f8008b` finalized with leader execution `ERROR` (`LEADER_EXEC_TIMEOUT`), `NO_MAJORITY`; it created no decision. A later operator check, transaction `0xc77886ed49493510fb2f023bd9fb8f210bf41a23164bc7ab117a8f5d2efc9006`, finalized with the same leader execution timeout and `NO_MAJORITY`. Independent `get_decisions` readback returned `[]`. The Pride standing at submission was `MATERIAL_DEVIATION_ESTABLISHED`, but the Gate's cross-contract read did not execute; no Gate decision or policy outcome is claimed, and no duplicate was submitted.
-- The local browser loaded the active deployment and read the amended Pride charter, `MATERIAL_DEVIATION_ESTABLISHED` standing, and Gate config. The IAB tab had no injected provider. Mocked EIP-1193 Node tests (23/23 passing) exercise connection rejection, wrong-network switching/blocking, account/chain/disconnect events, and transaction-state/readback code paths; no injected browser wallet transaction is claimed.
+Unauthorized Gate-operator and unauthorized rebuttal submissions finalized successfully at the transaction-execution layer but did not change state: `get_decisions` remained empty and the case remained unchanged until the authorized issuer rebuttal. This is state-transition evidence; it does not claim the return payload was a particular authorization error code.
 
-## Frontend and Vercel
+## Reliance Gate limitation
 
-`vercel.json` sets build command `npm run build` and output directory `public`; a fresh production build completed and produced `public/index.html` and `public/assets/deployment.json`. The local preview at `http://127.0.0.1:8080/#/network` returned the active charter at v2 with `MATERIAL_DEVIATION_ESTABLISHED` standing and the configured Gate. The browser had no injected wallet, so browser-level signing is not claimed. The mocked EIP-1193 Node suite passed 23/23, including connect rejection, wrong-network switching/blocking, account/chain/disconnect events, transaction-state source assertions, and the source-check readback assertion. These are mocked/local checks, distinct from the live Studionet receipts above.
+The authorized Gate call `0x6e67f5a18588a03fa0f563797542a17d5a4e8120816a920985967e1871acee98` finalized without majority (`NO_MAJORITY`) after leader execution timed out at 600 seconds (`LEADER_EXEC_TIMEOUT`). Independent `get_decisions` readback remains `[]`. The live cross-contract authorization path is therefore **not verified**. The frontend manifest keeps Gate writes disabled until that behavior is verified. No Gate decision is claimed.
 
-`npm test` passed 23/23; Pride Direct Mode passed 14/14 and Reliance Gate Direct Mode passed 3/3; `genvm-lint lint` passed 3 checks for each contract; `node scripts/verify-deployment.mjs` confirmed both source SHA-256 values; and `git diff --check` found no whitespace errors. `genvm-lint check` also reported the AST lint checks passing, but its separate SDK validation could not load the cached `py-genlayer` artifact (`runners/py-genlayer/...tar` missing); no SDK-validation pass is claimed. The Vercel project deployment and public URL have not been verified. Required public build variables are listed in the repository README; never put a private key or seed phrase in Vercel.
+## Frontend and build verification
+
+The production-mode local build (`VERCEL=1 npm run build`) succeeded and emitted `public/index.html` and `public/assets/deployment.json`; `vercel.json` selects `npm run build` and output directory `public`. The local preview at `http://127.0.0.1:8080/#/network` loaded live Studionet data showing the amended v2 charter, `MATERIAL_DEVIATION_ESTABLISHED`, Gate config, and no Gate decisions. It showed Gate writes unavailable. This is a local frontend/RPC read, not a hosted Vercel deployment.
+
+`npm test` covers mocked EIP-1193 connect, chain/account/disconnect events, wrong-network handling, write state, and readback assertions. These are mocked tests, not browser-wallet signing and not live transactions. No public Vercel URL or production deployment is verified here.
+
+## Local checks at the verified checkpoint
+
+- `npm test`: 23/23 passed.
+- GenLayer Direct Mode Pride, Gate, and integration tests: 22/22 passed.
+- `genvm-lint lint` on each contract: 3 checks passed per contract.
+- `npm run build` and `VERCEL=1 npm run build`: passed.
+- `node scripts/verify-deployment.mjs`: both local source hashes match the deployment manifest.
+- `git diff --check`: passed.
+
+These checks do not replace the blocked Gate live-call verification. Release status: **Pride V1 live lifecycle verified; Gate authorization and hosted Vercel deployment remain unverified. Not a complete release.**
 
 ## Historical deployments
 
-V0.3 address `0xe20273aDaaDb19B6BE34Fa5C6CfDe3B59719d4C0` and its earlier prototype remain historical only. The `previousPrototype` and `previousV03Deployment` entries in `assets/deployment.json` are not the V1 release.
+Older prototype deployments are preserved as historical metadata in `assets/deployment.json`. They are not the active V1 deployments above.

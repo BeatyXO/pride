@@ -2,6 +2,8 @@ import { connectInjectedWallet, subscribeWallet, switchInjectedWalletToStudionet
 
 let sdkPromise;
 let configPromise;
+let deploymentWritesEnabled = false;
+let relianceGateWritesEnabled = false;
 let mountedTarget;
 let notifyUser = () => {};
 let records = [];
@@ -22,6 +24,10 @@ function rememberTransaction(entry) {
   try { localStorage.setItem(TX_KEY, JSON.stringify(transactions)); } catch { /* tx hash remains in the page state */ }
 }
 
+function walletIsReady() {
+  return Boolean(connectedAddress && currentChainId === '0xf22f');
+}
+
 const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
 }[char]));
@@ -36,6 +42,10 @@ async function deployment() {
   configPromise ??= fetch('./assets/deployment.json', { cache: 'no-store' }).then(async (response) => {
     if (!response.ok) throw new Error('Deployment manifest could not be loaded.');
     return response.json();
+  }).then((config) => {
+    deploymentWritesEnabled = config.writesEnabled === true;
+    relianceGateWritesEnabled = config.gateWritesEnabled === true;
+    return config;
   });
   return configPromise;
 }
@@ -64,7 +74,7 @@ async function discoverWallet() {
 function frame() {
   if (!mountedTarget) return;
   const configured = mountedTarget.dataset.configured === 'true';
-  const walletReady = Boolean(connectedAddress && currentChainId === '0xf22f');
+  const walletReady = walletIsReady() && deploymentWritesEnabled;
   const headerStatus = document.getElementById('wallet-header-status');
   const headerAction = document.getElementById('wallet-header-action');
   if (headerStatus) {
@@ -94,7 +104,7 @@ function frame() {
       <h1 class="title">Public chain records <span class="gradient-text">you can verify.</span></h1>
       <p class="lead">Browse finalized Studionet records without connecting. Connect a wallet to register a publisher or commitment, observe a source, submit an amendment, or challenge a record. Any wallet can submit an eligible source observation.</p>
       <div class="network-state" role="status" aria-live="polite">${esc(operation?.message || (!configured ? 'Deployment is not configured.' : (connectedAddress ? (currentChainId && currentChainId !== '0xf22f' ? 'Wrong network. Switch your wallet to GenLayer Studionet (chain 61999), then reconnect.' : `Connected to Studionet as ${connectedAddress}. You can use the publisher and commitment actions below.`) : 'Wallet not connected. Public records are read-only until you connect.')))}</div>
-      ${walletReady ? '' : '<p class="wallet-helper">Use <strong>Connect wallet</strong> in the top bar before writing. PRIDE never asks for your recovery phrase.</p>'}
+      ${deploymentWritesEnabled ? (walletReady ? '' : '<p class="wallet-helper">Use <strong>Connect wallet</strong> in the top bar before writing. PRIDE never asks for your recovery phrase.</p>') : '<p class="wallet-helper">Writes are disabled because the checked out contracts do not match both source fingerprints recorded for this deployment.</p>'}
       ${transactions.length ? `<details class="section"><summary>Wallet transaction history (${transactions.length})</summary>${transactions.map((item) => `<p><b>${esc(item.action)}</b> · ${esc(item.status)} · ${esc(item.at)} · <a class="link-action" href="https://explorer-studio.genlayer.com/tx/${encodeURIComponent(item.hash)}" target="_blank" rel="noopener noreferrer">${esc(item.hash.slice(0, 12))}… ↗</a></p>`).join('')}</details>` : ''}
     </section>
     ${!configured ? `<section class="section banner">No contract address is set in <code>assets/deployment.json</code>. PRIDE will not show demo records in Real Network mode or pretend a deployment exists.</section>` : ''}
@@ -155,7 +165,7 @@ async function readCharters() {
     try {
       const gateConfig = await readContractJson(client, sdk, { ...cfg, contractAddress: cfg.relianceGateAddress }, 'get_config');
       const decisions = await readContractJson(client, sdk, { ...cfg, contractAddress: cfg.relianceGateAddress }, 'get_decisions');
-      gateHtml = `<section class="section panel"><h2>Reliance Gate</h2><p>This separate gate reads its bound PRIDE standing. Operator: ${esc(gateConfig.operator)} · commitment ${Number(gateConfig.charter_id)} · required version ${Number(gateConfig.expected_version)} · policy ${esc(gateConfig.required_standing)}.</p>${Array.isArray(decisions) && decisions.length ? decisions.map((item) => `<p>Action ${esc(item.action_id)} · ${item.permitted ? 'PERMITTED' : 'REJECTED'} · ${esc(item.reason)} · ${esc(item.standing)}</p>`).join('') : '<p>No gate decisions yet.</p>'}${connectedAddress && gateConfig.operator?.toLowerCase() === connectedAddress.toLowerCase() ? '<form id="network-gate-form" class="form-grid"><div class="field"><label for="gate-action-id">Unique action ID</label><input id="gate-action-id" name="action_id" maxlength="100" required /></div><button class="btn btn-primary" type="submit">Check finalized PRIDE standing</button></form>' : '<p>Connect the configured operator wallet to submit a gate decision.</p>'}</section>`;
+      gateHtml = `<section class="section panel"><h2>Reliance Gate</h2><p>This separate gate checks finalized, version-matched source evidence. Operator: ${esc(gateConfig.operator)} · commitment ${Number(gateConfig.charter_id)} · required version ${Number(gateConfig.expected_version)} · qualifying outcome ${esc(gateConfig.required_checkpoint_outcome || 'MATCHES')}.</p>${Array.isArray(decisions) && decisions.length ? decisions.map((item) => `<p>Action ${esc(item.action_id)} · ${item.permitted ? 'PERMITTED' : 'REJECTED'} · ${esc(item.reason)} · ${esc(item.standing)}${item.has_checkpoint ? ` · checkpoint ${Number(item.checkpoint_id)} ${esc(item.checkpoint_outcome)} · SHA-256 ${esc(item.checkpoint_digest)}` : ' · no qualifying checkpoint'}</p>`).join('') : '<p>No gate decisions yet.</p>'}${relianceGateWritesEnabled && connectedAddress && gateConfig.operator?.toLowerCase() === connectedAddress.toLowerCase() ? '<form id="network-gate-form" class="form-grid"><div class="field"><label for="gate-action-id">Unique action ID</label><input id="gate-action-id" name="action_id" maxlength="100" required /></div><button class="btn btn-primary" type="submit">Check finalized PRIDE evidence</button></form>' : '<p>Gate writes are disabled until cross-contract authorization is verified on Studionet.</p>'}</section>`;
     } catch { gateHtml = '<section class="section panel"><h2>Reliance Gate</h2><p>Configured gate could not be read. Its contract address or cross-contract view is unavailable.</p></section>'; }
   }
 }
@@ -264,6 +274,11 @@ async function recoverPendingTransactions() {
 
 async function submit(functionName, args, targetAddress = '') {
   const { cfg, sdk, client } = await context(true);
+  if (cfg.writesEnabled !== true) throw new Error('Pride writes are disabled until its source fingerprint matches the verified deployment.');
+  if (targetAddress && targetAddress.toLowerCase() === String(cfg.relianceGateAddress || '').toLowerCase()
+      && cfg.gateWritesEnabled !== true) {
+    throw new Error('Reliance Gate writes are disabled until cross-contract authorization is verified on Studionet.');
+  }
   operation = { message: 'Waiting for wallet signature. Review the network cost in your wallet…' };
   frame();
   const txHash = await client.writeContract({
@@ -396,6 +411,7 @@ document.addEventListener('click', async (event) => {
       const challengesValue = await client.readContract({ address: cfg.contractAddress, functionName: 'get_challenges', args: [Number(button.dataset.networkHistory)], transactionHashVariant: sdk.TransactionHashVariant.LATEST_FINAL });
       const challenges = typeof challengesValue === 'string' ? JSON.parse(challengesValue) : challengesValue;
       const versions = await readContractJson(client, sdk, cfg, 'get_versions', [Number(button.dataset.networkHistory)]);
+      const walletReady = walletIsReady();
       output.innerHTML = `<div class="section-heading"><div><h2>Verified history for commitment ${Number(button.dataset.networkHistory)}</h2><p>Finalized snapshots include full source text, content digest, observer, source role and recorded time.</p></div></div>${history.length ? history.map((item) => `<article class="panel network-record"><div><span class="chip warn">${esc(item.outcome)}</span><p>${esc(item.evidence_excerpt)}</p><code>${esc(item.content_digest)}</code><small>${esc(item.source_role)} · ${esc(item.observer)} · ${esc(item.recorded_at)}</small><small>${esc(item.source_url)}</small><details><summary>Inspect captured source</summary><pre>${esc(item.text)}</pre></details></div></article>`).join('') : '<div class="empty">No checkpoints are stored for this commitment.</div>'}<h3>Amendments</h3>${amendments.length ? amendments.map((item) => `<article class="panel"><p>Version ${Number(item.version)} · ${item.active ? 'Activated' : 'Pending activation'}</p><p>${esc(item.terms)}</p><code>Previous ${esc(item.previous_digest)} → next ${esc(item.next_digest)}</code>${!item.active ? `<button class="btn btn-outline" data-network-action="activate-amendment" data-id="${Number(item.id)}">Activate amendment</button>` : ''}</article>`).join('') : '<div class="empty">No amendments.</div>'}<h3>Evidence cases</h3>${challenges.length ? challenges.map((item) => `<article class="panel"><p>Case ${esc(item.case_id)} · ${esc(item.status)} · checkpoint ${Number(item.checkpoint_id)} · v${Number(item.version)}</p><p>${esc(item.evidence_quote)}</p><small>${esc(item.evidence_role)} · evidence SHA-256 ${esc(item.evidence_digest)}</small>${item.rebuttal_digest ? `<p>Issuer rebuttal · ${esc(item.rebuttal_role)} · ${esc(item.rebuttal_quote)}</p><small>SHA-256 ${esc(item.rebuttal_digest)}</small>` : ''}${item.citation ? `<p>Finding: ${esc(item.finding_code)} · citation: ${esc(item.citation)}</p>` : ''}${item.status === 'OPEN' && walletReady && item.issuer?.toLowerCase() === connectedAddress.toLowerCase() ? `<button class="btn btn-outline" data-network-action="rebut-challenge" data-id="${Number(item.id)}">Submit rebuttal</button>` : ''}${['OPEN','REBUTTED'].includes(item.status) && walletReady ? `<button class="btn btn-outline" data-network-action="adjudicate-challenge" data-id="${Number(item.id)}">Run consensus adjudication</button><button class="btn btn-outline" data-network-action="expire-challenge" data-id="${Number(item.id)}">Expire after deadline</button>` : ''}</article>`).join('') : '<div class="empty">No evidence cases.</div>'}`;
       output.insertAdjacentHTML('afterbegin', `<details class="panel"><summary>Commitment version history (${versions.length})</summary><pre>${esc(JSON.stringify(versions, null, 2))}</pre></details>`);
     }
@@ -411,7 +427,11 @@ document.addEventListener('submit', async (event) => {
   event.preventDefault();
   const data = new FormData(event.target);
   if (event.target.id === 'network-gate-form') {
-    try { await submit('authorize', [String(data.get('action_id') || '').trim()], (await deployment()).relianceGateAddress); }
+    try {
+      const cfg = await deployment();
+      if (cfg.gateWritesEnabled !== true) throw new Error('Reliance Gate writes are disabled until cross-contract authorization is verified on Studionet.');
+      await submit('authorize', [String(data.get('action_id') || '').trim()], cfg.relianceGateAddress);
+    }
     catch (error) { operation = { message: error?.message || 'Reliance Gate request failed.' }; frame(); notifyUser(operation.message); }
     return;
   }

@@ -53,8 +53,16 @@ if (env.VERCEL === '1' && !manifest.relianceGateAddress) throw new Error('Set PR
 if (env.VERCEL === '1' && (!/^[0-9a-fA-F]{64}$/.test(manifest.relianceGateSourceSha256 || '') || manifest.relianceGateSourceSha256.toLowerCase() !== relianceGateSourceSha256)) {
   throw new Error('PRIDE_RELIANCE_GATE_SOURCE_SHA256 must match the deployed contracts/pride_reliance_gate.py bytes.');
 }
-if (manifest.relianceGateSourceSha256 && manifest.relianceGateSourceSha256 !== relianceGateSourceSha256) {
-  throw new Error('Reliance Gate source hash does not match local contract bytes.');
+manifest.sourceParity = manifest.sourceSha256 === sourceSha256;
+manifest.relianceGateSourceParity = manifest.relianceGateSourceSha256 === relianceGateSourceSha256;
+manifest.writesEnabled = Boolean(manifest.contractAddress && manifest.relianceGateAddress &&
+  manifest.sourceParity && manifest.relianceGateSourceParity);
+manifest.gateLiveVerified = manifest.gateLiveVerified === true;
+manifest.gateWritesEnabled = manifest.writesEnabled && manifest.gateLiveVerified;
+manifest.deploymentStatus = !manifest.writesEnabled ? 'source-mismatch-writes-disabled' :
+  manifest.gateWritesEnabled ? 'verified-source-parity-and-gate-live' : 'pride-source-parity-gate-live-unverified';
+if (env.VERCEL === '1' && !manifest.writesEnabled) {
+  throw new Error('Both deployed contract source hashes must match this build before Vercel production deployment.');
 }
 await mkdir(new URL('../public/assets/', import.meta.url), { recursive: true });
 await writeFile(outputPath, `${JSON.stringify(manifest, null, 2)}\n`);
