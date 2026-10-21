@@ -4,7 +4,7 @@
   "version": "0.2.0",
   "type": "module",
   "scripts": {
-    "build": "node scripts/build-deployment.mjs && esbuild ./assets/genlayer-client.entry.mjs --bundle --format=esm --target=es2022 --outfile=./assets/genlayer-client.js",
+    "build": "esbuild ./assets/genlayer-client.entry.mjs --bundle --format=esm --target=es2022 --outfile=./assets/genlayer-client.js && node scripts/package-site.mjs && node scripts/build-deployment.mjs",
     "test": "node --test tests/engine.test.mjs tests/network-sdk.test.mjs"
   },
   "dependencies": {

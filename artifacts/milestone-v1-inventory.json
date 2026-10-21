@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "milestone": "PRIDE V1 adjudication and Reliance Gate",
+  "status": "NOT_READY_FOR_SUBMISSION",
+  "baseline": {
+    "commit": "1537599fa4bb68df6d1fbb07b47c028c4eff31bc",
+    "tree": "1f771f2de05fd0fbeb63e95b864116ab59275bef",
+    "prideSourceSha256": "4594532457829e48fd57bd89a7adfaf7bfa20cb3f1f478d411606af33f84de77",
+    "relianceGate": "absent"
+  },
+  "milestoneStart": {
+    "commit": "f5f17ec1aedeb9542ba8cf6e0ee6b843abad1b88",
+    "tree": "d2f7cab4651daabe00a19a519046498f87bd9fb7"
+  },
+  "currentSources": {
+    "contracts/Pride.py": "9518a7f7b31c015e6c406e4577768b8a6af9bbefa55b1de4439f61e85c3a3504",
+    "contracts/pride_reliance_gate.py": "08686bfdaf4fd79b938c280c8577b1b119cb35316fd74d14ac9fce1145d6a05a",
+    "deployedByteParity": true
+  },
+  "studionet": {
+    "chainId": 61999,
+    "rpc": "https://studio.genlayer.com/api",
+    "pride": {
+      "address": "0x1A232b6eb69484B29f9Fc9A0Fa06c927083726e9",
+      "deploymentTransaction": "0x431f90c4dfa57aadbe38480df2fbfcdafffbe7777596391d1fac8ad225520302"
+    },
+    "relianceGate": {
+      "address": "0x7eF1f14639e1F6DA28E4912Ec7D0C50DA0f8fB9a",
+      "deploymentTransaction": "0x9ccb5596afdd2460eb63cceae80895804d26b60059151f92557eec259c3a7e7a",
+      "decisionTransactions": {
+        "REJECTED": "0x5b48ded23660fc2537cc059e254653d8c133201f50d397511bac43c1751d2402",
+        "PERMITTED": "0x2a2730d2f1dfd1f1a6e408eda9ad93f2bd52a44811891e5016b1c110cf17242e"
+      },
+      "permitTestInstance": "0xa48F2775CD457Fa2F7b4bf31d81C635367726F65"
+    }
+  },
+  "lifecycleEvidence": {
+    "UPHELD": "docs/live-lifecycle-case-v1.json",
+    "REJECTED": "docs/live-lifecycle-case-v2-rejected.json",
+    "INCONCLUSIVE": "docs/live-lifecycle-case-v3-inconclusive.json",
+    "gateDecisions": "docs/live-gate-decisions-v1.json"
+  },
+  "frontend": {
+    "productionUrl": "https://pride-coral.vercel.app",
+    "deploymentId": "dpl_EN4YK8tc3TqLFpGNHJAr9zHi22Zk",
+    "deploymentState": "READY",
+    "outputDirectory": "public",
+    "publicManifestReadback": true,
+    "liveRecordsAndHistoryVerified": true,
+    "realInjectedWalletBrowserTransactions": "not verified: active browser bridge exposed no window.ethereum and wallet injection logged a property-definition conflict",
+    "mockedEip1193BehaviorTests": "npm test; 23/23 passed"
+  },
+  "checks": {
+    "npmTest": "23/23 passed",
+    "pythonPytest": "27/27 passed",
+    "genvmDirectMode": "21/21 passed",
+    "genvmLintPride": "3 checks passed",
+    "genvmLintRelianceGate": "3 checks passed",
+    "deploymentManifest": "Pride and Gate source hashes match",
+    "vercelProductionBuild": "passed; public/ emitted",
+    "productionDeployment": "READY",
+    "githubCiSourceReleaseCommit": "8084d4f045309abd09244477a5e045b9676dd5ca; both static-and-unit runs passed",
+    "githubVercelStatusContext": "failed: legacy unavailable beatycat/pride integration; independent production deployment is READY",
+    "gitHubPr": "https://github.com/BeatyXO/pride/pull/1",
+    "compareUrl": "final documentation freeze commit compare is recorded in PR #1"
+  },
+  "reviewEvidence": [
+    "README.md",
+    "docs/SECURITY.md",
+    "docs/MILESTONE_COMPARISON.md",
+    "docs/MILESTONE_V1_FREEZE.md",
+    "docs/SUBMISSION_V1.md",
+    "docs/REVIEWER_V1.md",
+    "docs/LIVE_EVIDENCE.md",
+    "docs/TEST_MATRIX_V1.md"
+  ],
+  "releaseDisposition": "NOT_READY_FOR_SUBMISSION until genuine injected-wallet browser transactions and green final-head GitHub CI are independently verified."
+}

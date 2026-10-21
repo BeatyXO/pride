@@ -1,0 +1,53 @@
+{
+  "network": "GenLayer Studionet",
+  "chainId": 61999,
+  "rpcUrl": "https://studio.genlayer.com/api",
+  "prideAddress": "0x1A232b6eb69484B29f9Fc9A0Fa06c927083726e9",
+  "charterId": 1,
+  "charterTitle": "V1 Rejected Outcome Fixture",
+  "publisherId": 0,
+  "ownerAddress": "0xD6423aE82a975d55C6CeaC222827A727325e0459",
+  "challengerAddress": "0xDAFEC147D24f5FbE1e540e228CFe017b6e5c5a2f",
+  "fixtureCommit": "9ab1a76c784b525671bc5bc3f9873b8bf581a23e",
+  "baselineUrl": "https://raw.githubusercontent.com/BeatyXO/pride/9ab1a76c784b525671bc5bc3f9873b8bf581a23e/tests/fixtures/commitments/baseline.txt",
+  "baselineDigest": "2ba9dacb3032f97ca330ab7fc2954dda23ac613135bb98bf4f6bdcea45955701",
+  "checkpointId": 3,
+  "checkpointUrl": "https://raw.githubusercontent.com/BeatyXO/pride/9ab1a76c784b525671bc5bc3f9873b8bf581a23e/tests/fixtures/commitments/baseline.txt",
+  "checkpointDigest": "2ba9dacb3032f97ca330ab7fc2954dda23ac613135bb98bf4f6bdcea45955701",
+  "checkpointOutcome": "MATCHES",
+  "transactionHashes": {
+    "registerCharter": "0x23fcc2e70310db9dae8afd53a1ca7b5e4f71da76188c204a56217701827f4757",
+    "checkSource": "0x4b7ac5d01a517b3a17e73360937279a3427a3cdc20ab396682d834d6094d5851",
+    "openChallenge": "0xba6cefa843f73f804c113e52114252b1d5de7905c5cf742ae7ca80d0d269e8a6",
+    "issuerRebuttal": "0xf907c376b037251e95d998bb1d4e66a367609801b8977f5c43f5370dd8c0b8f2",
+    "adjudication": "0x934c1d7138dbdcbb6e81ce2a412022d080c40df0517f00959f4cfbbee511fa3e"
+  },
+  "case": {
+    "challengeId": 1,
+    "caseId": "8af3d8f70287d9734749530b939bbc6e8471569dc2ea0fc17ce7026327ecfa68",
+    "evidenceUrl": "https://raw.githubusercontent.com/BeatyXO/pride/9ab1a76c784b525671bc5bc3f9873b8bf581a23e/tests/fixtures/commitments/changed.txt",
+    "evidenceDigest": "f06bb2b09923a2a86b59cb212983a3faa29a2ac5849bc27c8aef1b00f5a2b309",
+    "evidenceQuote": "Community allocation is now 15%.",
+    "rebuttalUrl": "https://raw.githubusercontent.com/BeatyXO/pride/9ab1a76c784b525671bc5bc3f9873b8bf581a23e/tests/fixtures/commitments/baseline.txt",
+    "rebuttalDigest": "2ba9dacb3032f97ca330ab7fc2954dda23ac613135bb98bf4f6bdcea45955701",
+    "rebuttalQuote": "Community allocation remains 30%.",
+    "finalStatus": "REJECTED",
+    "verdict": "REJECTED",
+    "findingCode": "NO_MATERIAL_DEVIATION",
+    "citationRole": "CHECKPOINT",
+    "citation": "Community allocation remains 30%."
+  },
+  "finalPrideReadbacks": {
+    "standing": "NOT_ESTABLISHED",
+    "relianceStatus": {
+      "eligible": true,
+      "reason": "QUALIFYING_FINALIZED_MATCH",
+      "version": 1,
+      "checkpointId": 3,
+      "checkpointOutcome": "MATCHES",
+      "checkpointDigest": "2ba9dacb3032f97ca330ab7fc2954dda23ac613135bb98bf4f6bdcea45955701",
+      "blockingCases": []
+    }
+  },
+  "receipts": "All five listed Pride writes were retrieved as FINALIZED with MAJORITY_AGREE and leader execution SUCCESS. Final case and standing values were independently read from Pride after adjudication."
+}

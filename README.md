@@ -1,58 +1,57 @@
 # PRIDE — Proof matters
 
-PRIDE is a public commitment registry with two clearly separated experiences:
+PRIDE is a public commitment registry built as GenLayer Intelligent Contracts. The local showcase contains fictional browser-local records; the Real Network workspace reads and writes the configured Studionet contract. Publisher names and repository scope are self-asserted; wallet control does not prove organization, domain, or repository ownership.
 
-- **Local showcase** uses fictional examples and browser storage. It does not submit transactions or produce verified evidence.
-- **Real network** reads the configured GenLayer Studionet contract and submits writes from an injected EIP-1193 wallet. It is the default route. A write is successful only after finalization and state readback.
+## V1 contract policy
 
-The original colored PRIDE mark, hero treatment, and project illustrations are part of the identity. Metric cards omit their small decorative symbols.
+- Source material is commit-pinned raw GitHub `.txt`, normalized and stored as a bounded snapshot with SHA-256.
+- Permissionless observations are limited to the publisher's declared repository. This provides reproducible, independent wallet participation, not an independent authority registry.
+- Challenge capsules bind the relevant version, source digests, exact evidence, parties, and lifecycle times. Third-party claims are labeled unverified and cannot alone support an upheld finding. A `MATCHES` checkpoint may be challenged only when it carries a verified exact citation.
+- The issuer's rebuttal window closes strictly before `opened_at + 3600` seconds. Adjudication can begin at the deadline; an issuer cannot change that deadline.
+- The separate `PrideRelianceGate` permits only an active commitment at the expected version with a current-version `MATCHES` checkpoint, matching publisher-repository scope and captured-content digest, and no unresolved or adverse case. Missing evidence fails closed. `OBSERVED` standing alone never permits. Corrected live Gate source uses the documented synchronous `view()` cross-contract call; finalized live `REJECTED` and `PERMITTED` decisions match independent Pride state readbacks.
 
-## Contract capabilities
+See [security and trust model](docs/SECURITY.md), [product and architecture](docs/PRODUCT_SPEC.md), [baseline freeze](docs/MILESTONE_BASELINE.md), the [test matrix](docs/TEST_MATRIX_V1.md), and the [reviewer evidence](docs/REVIEWER_V1.md).
 
-`contracts/Pride.py` contains the deployed implementation:
+## Local validation
 
-- Wallet-bound publisher labels with one asserted GitHub repository scope and revocation.
-- Commit-pinned raw GitHub text evidence, complete bounded source snapshots, canonical SHA-256 digests, and validator-agreed semantic checkpoints. Each follow-up check names a newer immutable source URL in the publisher's repository scope.
-- Deterministic numeric comparison signals, per-publisher/per-commitment capacity limits, and duplicate snapshot protection.
-- Append-only amendment proposals and activation with source and notice digests.
-- Evidence-backed challenge and issuer-rebuttal records. The only supported terminal challenge result is `INCONCLUSIVE`.
-
-This is not proof that the wallet controls the named project, GitHub repository, or any domain. The runtime does not expose a verified final redirect URL or content type. Amendments have no trusted publication time or required advance-notice period. Disputes are recorded, not adjudicated. Read [the security model](docs/SECURITY.md) before treating records as evidence.
-
-## Local development
+Required tools: GenLayer CLI `0.39.1`, pinned GenVM runner marker `v0.2.16`, GenVM lint `0.11.0`, and GenLayer Direct Mode tooling from `requirements-dev.txt`.
 
 ```sh
 npm ci
-npm run build
 npm test
-python -m py_compile contracts/Pride.py
+python -m unittest discover -s tests -p '*test.py' -v
+python -m py_compile contracts/Pride.py contracts/pride_reliance_gate.py
 genvm-lint lint contracts/Pride.py
-gltest -p no:cacheprovider tests/test_contract_direct.py -v
-python -m http.server 8080
+genvm-lint lint contracts/pride_reliance_gate.py
+gltest -p no:cacheprovider tests/test_contract_direct.py tests/test_reliance_gate_direct.py tests/test_gate_integration.py -v
+npm run build
 ```
 
-Open `http://localhost:8080`. Direct Mode fixtures are mocked and are not proof of live network behavior. `genvm-lint validate contracts/Pride.py` also requires the exact GenLayer runner archive named in the contract header.
+Direct Mode and simulator runs use controlled source/model fixtures and do not prove live Studionet consensus. The cross-contract simulator test executes the real Pride view, but it is not network evidence. `genvm-lint lint` is AST lint; SDK validation is a separate check and must not be inferred from AST success.
 
-## Vercel configuration
+## Studionet and Vercel
 
-The build reads these **public** variables and writes them to `assets/deployment.json`:
+Target network: GenLayer Studionet, chain `61999` (`0xF22F`), RPC `https://studio.genlayer.com/api`, explorer `https://explorer-studio.genlayer.com`.
 
-| Variable | Value |
+Current Pride and corrected Reliance Gate deployments are recorded in `assets/deployment.json`, with finalized deployment transactions and byte-for-byte deployed source parity. Live Pride adjudications now include `UPHELD`, `REJECTED`, and `INCONCLUSIVE`; live Gate `REJECTED` and `PERMITTED` decisions were independently read back and matched the corresponding Pride eligibility state. Earlier Gate deployments using a `LATEST_FINAL` state override timed out; the corrected `view()` call completed successfully. Production-mode build validates deployment metadata and writes the manifest into `public/assets/deployment.json`.
+
+Supported public Vercel build variables:
+
+| Variable | Required value |
 | --- | --- |
 | `PRIDE_NETWORK` | `studionet` |
 | `PRIDE_CHAIN_ID` | `61999` |
 | `PRIDE_RPC_URL` | `https://studio.genlayer.com/api` |
 | `PRIDE_EXPLORER_URL` | `https://explorer-studio.genlayer.com` |
-| `PRIDE_CONTRACT_ADDRESS` | The address of the final deployed contract |
-| `PRIDE_DEPLOYMENT_TRANSACTION` | The final deployment transaction hash |
-| `PRIDE_SOURCE_SHA256` | SHA-256 of the final contract source bytes |
+| `PRIDE_CONTRACT_ADDRESS` | `0x1A232b6eb69484B29f9Fc9A0Fa06c927083726e9` |
+| `PRIDE_DEPLOYMENT_TRANSACTION` | `0x431f90c4dfa57aadbe38480df2fbfcdafffbe7777596391d1fac8ad225520302` |
+| `PRIDE_SOURCE_SHA256` | `9518a7f7b31c015e6c406e4577768b8a6af9bbefa55b1de4439f61e85c3a3504` |
+| `PRIDE_RELIANCE_GATE_ADDRESS` | `0x7eF1f14639e1F6DA28E4912Ec7D0C50DA0f8fB9a` |
+| `PRIDE_RELIANCE_GATE_DEPLOYMENT_TRANSACTION` | `0x9ccb5596afdd2460eb63cceae80895804d26b60059151f92557eec259c3a7e7a` |
+| `PRIDE_RELIANCE_GATE_SOURCE_SHA256` | `08686bfdaf4fd79b938c280c8577b1b119cb35316fd74d14ac9fce1145d6a05a` |
 
-Never put a wallet private key or seed phrase in Vercel. The manifest records the current Studionet deployment and its matching source hash. The earlier v0.2 address is retained only as historical metadata.
+`vercel.json` specifies `npm run build` and `public`. Never put a private key or seed phrase in Vercel.
 
-## Deployment status
+## Release status
 
-The current contract is deployed at `0xe20273aDaaDb19B6BE34Fa5C6CfDe3B59719d4C0` on Studionet (chain ID `61999`). Deployment transaction `0x77786b21af2621d46f7253ce481948994ca513cafcc1631391be9357c5b59608` finalized with majority agreement and successful execution. RPC source retrieval matched the local contract byte-for-byte; SHA-256 is `4594532457829e48fd57bd89a7adfaf7bfa20cb3f1f478d411606af33f84de77`. A public fixture lifecycle has also been executed and independently read back. See [live evidence](docs/LIVE_EVIDENCE.md).
-
-## CI
-
-GitHub Actions runs JavaScript syntax checks and unit tests, Python checks, GenVM lint, and GenVM Direct Mode contract tests. Browser automation and real Studionet wallet tests are not claimed by the current test suite.
+Live Studionet evidence now covers the complete Pride case outcome matrix and Gate `PERMITTED`/`REJECTED` decisions. See [live transaction evidence](docs/LIVE_EVIDENCE.md), [case evidence](docs/live-lifecycle-case-v1.json), [case evidence: REJECTED](docs/live-lifecycle-case-v2-rejected.json), [case evidence: INCONCLUSIVE](docs/live-lifecycle-case-v3-inconclusive.json), and [Gate evidence](docs/live-gate-decisions-v1.json). The production frontend is at https://pride-coral.vercel.app. Its public chain records and case-history disclosures were verified in-browser. GitHub Actions passed on release commit `8084d4f045309abd09244477a5e045b9676dd5ca`. EIP-1193 behavior is covered by mocked-provider tests; the browser session exposed no injected wallet, so genuine public-site wallet flows remain unverified. The separate Vercel GitHub check still targets an inaccessible legacy `beatycat/pride` project and is failing; the independent production deployment is READY. Submission readiness has not been declared.

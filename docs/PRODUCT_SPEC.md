@@ -1,24 +1,36 @@
-# PRIDE product scope
+# PRIDE V1 milestone architecture
 
-PRIDE records public commitments, issuer-submitted source evidence, semantic checkpoints, amendments, and challenges. It does not label an organization as fraudulent or convert a model conclusion into a legal finding.
+## User flows
 
-## Two separate workspaces
+The local showcase is fictional browser-local content. The real-network page reads finalized registry records and uses an injected EIP-1193 provider for writes. It includes publisher registration/revocation, commitment registration, issuer source checks, permissionless observations, amendments, evidence challenges, rebuttals, adjudication, expiry, history, transaction status, and state readback. All writes require Studionet chain ID `61999` and final success requires both successful execution and relevant finalized state.
 
-The local showcase uses synthetic examples and browser storage. It supports local comparison and backup, but does not fetch sources or write to a chain. The real-network page is the default route and displays only records read from the configured contract. It requires an injected EIP-1193 wallet for writes and gates transactions on Studionet chain ID `61999`.
+## Contract state model
 
-## Real-network lifecycle supported by the contract candidate
+`Pride` stores publishers, commitments, bounded source checkpoints, amendment proposals, immutable commitment versions, and challenge capsules. Capacity constants bound publishers, records, per-publisher/per-record actions, checkpoints, cases, amendments, and page sizes. `get_checks`, `get_charters`, `get_publishers`, `get_amendments`, `get_challenges`, and `get_versions` expose bounded pages.
 
-1. A wallet registers a publisher label and asserted GitHub repository scope.
-2. The same wallet registers a commitment against a commit-pinned raw text source in that repository.
-3. The issuer can request bounded source checkpoints by submitting a new immutable commit-pinned text URL from the same repository scope. Each record includes that URL, full captured text, digest, semantic outcome, and exact quote, compared against the original baseline.
-4. The issuer can propose and activate an append-only amendment with a separate notice source.
-5. A user may challenge a material or possible-change checkpoint with a commit-pinned source and exact quote. The issuer can rebut with comparable evidence.
-6. A challenge can be closed only as inconclusive. No adverse adjudication or expiry is implemented.
+Observation is open to any wallet but source URLs must remain in the publisher's declared, commit-pinned GitHub repository scope. Each checkpoint freezes source URL, full bounded canonical text, digest, observer, source role, version, outcome, exact citation, and chain-derived transaction time. This is permissionless observation of the publisher-declared evidence scope; it does not establish an independent authority or domain identity.
 
-## Visual direction
+## Evidence capsule and state machine
 
-The identity uses deep violet/plum surfaces with lavender, warm yellow, coral, and gradient accents. Preserve the colored PRIDE mark, hero art, and project illustrations. Small decorative icons inside the overview metric cards are intentionally omitted.
+Opening a challenge freezes charter/version, issuer/challenger, original terms and baseline digest, checkpoint identity and outcome, challenge/rebuttal source URLs and digests, source roles, exact excerpts, policy, timestamps, expiry, and a deterministic case ID. Only one case may reference a checkpoint. A challenge source outside the declared repository is labeled `UNVERIFIED_THIRD_PARTY`; it may provide context but cannot alone support `UPHELD`.
 
-## Trust labels
+```text
+OPEN ── issuer rebuttal ──> REBUTTED
+  │                            │
+  ├── consensus adjudication ──┴──> UPHELD | REJECTED | INCONCLUSIVE
+  └── expiry after 30 days ─────────> EXPIRED (INCONCLUSIVE standing)
+```
 
-Use “publisher wallet” rather than “verified organization.” An on-chain transaction proves the sender controlled the wallet for that transaction; it does not prove ownership of a third-party domain or GitHub project. Use “captured source” and “model-supported outcome” rather than “proof of breach.” A challenge is evidence-backed but not adjudicated. The detailed security limitations are in [SECURITY.md](SECURITY.md).
+The issuer has a one-hour rebuttal window before an unrebutted case may be adjudicated. A submitted rebuttal makes the case immediately eligible for adjudication. Terminal outcomes cannot be changed. Open cases prevent amendment activation, so amendments cannot evade a pending case. Adjudication re-fetches and re-hashes all frozen inputs, uses a structured semantic decision, requires exact stored checkpoint evidence, and compares every decision-critical field and digest across validators. Failed or changed evidence yields `INCONCLUSIVE`.
+
+## Reliance Gate
+
+`PrideRelianceGate` is a separate, non-custodial contract bound at construction to a PRIDE address, charter ID, and expected version. Only its operator may request an action decision. It performs a typed cross-contract `get_reliance_status` view at `LATEST_FINAL` and permits only an active commitment with the expected version, a current-version `MATCHES` checkpoint, source and captured-content integrity, publisher-repository scope, and no open, rebutted, upheld, inconclusive, or expired case. Missing evidence fails closed. `get_standing` remains a distinct adjudication view; `OBSERVED` alone never grants eligibility. The local simulator integration executes the actual Pride contract view, but does not establish Studionet compatibility.
+
+Permissionless observations are independent wallet actions within the issuer's self-asserted repository scope. They improve reproducibility and expose disagreements, but do not create an independent authority registry or prove repository ownership. Third-party evidence remains labeled unverified and cannot alone support an upheld finding. A `MATCHES` checkpoint may be challenged when it has a verified exact citation, allowing adjudication of a cited false match; a match without a citation cannot be admitted as a challenge case.
+
+The issuer can rebut only strictly before `opened_at + 3600` seconds. The opening timestamp and 30-day expiry are fixed by the challenge transaction and cannot be extended by the issuer. At the one-hour deadline the case is eligible for adjudication, not rebuttal.
+
+## UI trust labels
+
+UI separates local showcase data from chain records. It labels asserted publisher scope, source role, finalized state, observer, evidence digest, case outcome, and transaction state. It does not present local samples as consensus evidence or model outcomes as legal conclusions. The original colored PRIDE mark, hero color treatment, and project illustrations remain; small card symbols were removed by product request.

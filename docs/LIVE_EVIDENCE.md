@@ -1,29 +1,31 @@
-# Studionet evidence
+# PRIDE V1 live evidence and release status
 
-## Current deployment
+This document distinguishes finalized Studionet evidence from local tests and browser mocks. Every transaction listed here was submitted and its finalized receipt was retrieved; final application state was read independently from the contract.
 
-- Network: GenLayer Studionet, chain ID `61999` (`0xF22F`)
-- RPC: `https://studio.genlayer.com/api`
-- Contract: `0xe20273aDaaDb19B6BE34Fa5C6CfDe3B59719d4C0`
-- Deployment transaction: `0x77786b21af2621d46f7253ce481948994ca513cafcc1631391be9357c5b59608`
-- Receipt: `FINALIZED`, `MAJORITY_AGREE`; deployment execution result `SUCCESS`
-- Source SHA-256: `4594532457829e48fd57bd89a7adfaf7bfa20cb3f1f478d411606af33f84de77`
-- Source parity: `gen_getContractCode` returned 26,421 bytes, exactly matching `contracts/Pride.py` byte-for-byte.
-- `get_config` reports PRIDE v0.3.0, money disabled, wallet-based publisher identity, and repository ownership unproven.
+## Network, deployed sources, and schema
 
-## Live test lifecycle
+- Network: GenLayer Studionet, chain `61999` (`0xF22F`), RPC `https://studio.genlayer.com/api`; CLI `0.39.1`; runner marker `v0.2.16`.
+- Pride: `0x1A232b6eb69484B29f9Fc9A0Fa06c927083726e9`; deployment transaction `0x431f90c4dfa57aadbe38480df2fbfcdafffbe7777596391d1fac8ad225520302`; source SHA-256 `9518a7f7b31c015e6c406e4577768b8a6af9bbefa55b1de4439f61e85c3a3504`.
+- Corrected release Gate: `0x7eF1f14639e1F6DA28E4912Ec7D0C50DA0f8fB9a`; deployment transaction `0x9ccb5596afdd2460eb63cceae80895804d26b60059151f92557eec259c3a7e7a`; source SHA-256 `08686bfdaf4fd79b938c280c8577b1b119cb35316fd74d14ac9fce1145d6a05a`.
+- Independent source retrieval used `gen_getContractCode`; Pride and Gate remote source bytes were compared with local files. Both corrected Gate instances byte-match the same local source.
+- Fresh schemas expose Pride `get_reliance_status(charter_id:int) -> string` and Gate `authorize(action_id:string) -> any`, `get_config() -> string`, `get_decisions(offset:int,limit:int) -> string`. The typed IC interface matches the Pride view signature. Live calls below independently prove runtime interoperability.
+- Release Gate config binds the Pride contract, charter `0`, expected version `2`, and operator `0xD6423aE82a975d55C6CeaC222827A727325e0459`.
 
-The following non-financial demonstration used public commit-pinned fixtures from `BeatyXO/pride` and funded throwaway test wallets. It proves these particular Studionet calls and resulting state, not production publisher identity or domain ownership.
+## Gate timeout diagnosis and corrected decisions
 
-- Publisher registration: `0xe77a991cb82468f8a6165ef120bff4e469dac097b1e2186a7b88245a1ca1342c` — `FINALIZED`, `MAJORITY_AGREE`, `SUCCESS`; `get_publishers` returns active publisher ID 0, wallet `0xD6423aE82a975d55C6CeaC222827A727325e0459`, label `PRIDE Live Publisher`, asserted scope `BeatyXO/pride`.
-- Commitment registration: `0x367212bcc094cd0aca8adcc93c1f0e26beec10d618febb96fb4b73d3c738fb79` — `FINALIZED`, `MAJORITY_AGREE`, `SUCCESS`; `get_charters` returns charter ID 0, version 1, baseline terms `Community allocation remains 30%.`, digest `2ba9dacb3032f97ca330ab7fc2954dda23ac613135bb98bf4f6bdcea45955701`.
-- Baseline verification: independent `get_checks(0)` readback returned checkpoint 0 as `MATCHES`, quote `Community allocation remains 30%.`, with the same digest. Its transaction hash was not recovered in this run and is omitted.
-- Changed source verification: `0xc283c280e56367726a9774d76b02ab3dc6d9d91ece0f05bc538fbc8be5b98241` — `FINALIZED`, `MAJORITY_AGREE`; readback checkpoint 1 is `MATERIAL_CHANGE`, quote `Community allocation is now 15%.`, digest `f06bb2b09923a2a86b59cb212983a3faa29a2ac5849bc27c8aef1b00f5a2b309`, `measurements_changed: true`.
-- Challenge opened by a separate wallet: `0xf81fc986c4a579ab524936efac0fc7befca0fd8e08ea5155f295ae09dfa7c8b3` — `FINALIZED`, `MAJORITY_AGREE`; evidence digest and exact quote match checkpoint 1.
-- Issuer rebuttal: `0xf2b05daec31777a822bd3f79d1bd69f1b7f37dc201f0f2dffb81bc6ff671efc8` — `FINALIZED`, `MAJORITY_AGREE`; state records the rebuttal fixture digest `bc270a060bdaf97f9112946d24a46296f39d2308a572adc9891aa8556509e501` and its exact quote.
-- Independent resolution: `0x71007e4146f0d67f5f65e69732a875bab0904dde3a5d6f341da0b484123127cc` — `FINALIZED`, `MAJORITY_AGREE`; `get_challenges(0)` returns terminal status `INCONCLUSIVE`.
-- Authorized amendment proposal: `0x8616436a74fef0b958eee2dc2f246eeeead786a822c74c5e9e94e52746d2e27a` — `FINALIZED`, `MAJORITY_AGREE`; amendment ID 0 links version 1 digest to version 2 digest and records the separate disclosure digest.
-- Amendment activation: `0x3a9f27b562e6de39cacc1ec627dee5d4995f9ffe3b352bdfbaa6d8bb63dad244` — `FINALIZED`, `MAJORITY_AGREE`; `get_charters` returns version 2 and the original version 1 check history remains unchanged.
-- Unauthorized source check: `0xf336c8538bd166990f7b9e646e71452aaab1979e7ecb3dcb7c8bea2f90aa5079` — `FINALIZED`, `MAJORITY_AGREE` execution of the rejection path; transaction return data is `NOT_OWNER`. Independent `get_checks(0)` still returns only the two owner-created checkpoints.
+Three transactions through the original `view(state=StorageType.LATEST_FINAL)` call finalized `NO_MAJORITY` with leader `LEADER_EXEC_TIMEOUT` at 600 seconds. Their decision readbacks remained empty. GenLayer's documented synchronous IC view syntax is `other.view().method()` and reads the target at the current block. Removing the nonstandard state selector produced live success on two Pride states; the one-line change and opposite state outcomes provide the on-chain A/B evidence. Detailed receipts, schemas, configs, readbacks, and old failure hashes are in `docs/live-gate-decisions-v1.json`.
 
-Direct Mode exercises contract paths using controlled mocked source/model responses; it is not live network evidence. Node wallet tests use a controlled EIP-1193 provider. Browser automation with a real Studionet wallet was not run. The RPC readback tool independently queried state, but no third-party explorer indexing check was performed for each transaction.
+- `REJECTED`: transaction `0x5b48ded23660fc2537cc059e254653d8c133201f50d397511bac43c1751d2402`, finalized `MAJORITY_AGREE`, leader `SUCCESS`. Gate readback records `permitted:false`, `DISQUALIFYING_CASE`, standing `MATERIAL_DEVIATION_ESTABLISHED`, checkpoint 2/version 2/digest `d12554e1…c0a0df`. Independent Pride read returned `eligible:false` with the same reason, standing, checkpoint digest, and blocking case `UPHELD`.
+- `PERMITTED`: transaction `0x2a2730d2f1dfd1f1a6e408eda9ad93f2bd52a44811891e5016b1c110cf17242e` on byte-matched test Gate `0xa48F2775CD457Fa2F7b4bf31d81C635367726F65`, finalized `MAJORITY_AGREE`, leader `SUCCESS`. Gate readback records `permitted:true`, `POLICY_SATISFIED`, standing `NOT_ESTABLISHED`, checkpoint 3/version 1/digest `2ba9dacb…55701`. Independent Pride read returned `eligible:true`, `QUALIFYING_FINALIZED_MATCH`, and the same digest.
+
+## Live Pride lifecycle
+
+- Original lifecycle: `UPHELD` / `MATERIAL_DEVIATION`; case evidence and finalized transaction list are in `docs/live-lifecycle-case-v1.json`. Charter 0 version 2 has `MATERIAL_DEVIATION_ESTABLISHED` standing.
+- Rejected challenge: `REJECTED` / `NO_MATERIAL_DEVIATION`; case ID `8af3d8f70287d9734749530b939bbc6e8471569dc2ea0fc17ce7026327ecfa68`; adjudication transaction `0x934c1d7138dbdcbb6e81ce2a412022d080c40df0517f00959f4cfbbee511fa3e`. Independent readback shows `NOT_ESTABLISHED` and qualifying checkpoint eligibility. Details: `docs/live-lifecycle-case-v2-rejected.json`.
+- Inconclusive challenge: `INCONCLUSIVE` / `AMBIGUOUS_OR_CONFLICTING`; case ID `090b4325353e2b60a65bc4e7f253bab86ea453ce6cafd5b62a7f9128665001aa`; adjudication transaction `0x02be25703f9dbc1d14e5c6c7be8c34d2d59b693ce656a9488a7149222f6fdb43`. Independent readback shows `INCONCLUSIVE` standing and reliance blocked by the inconclusive case. The cited ambiguity fixture is pinned to commit `06fd2c1b42e4c53692cbf5a03f6b0bcb1a922cd3`. Details: `docs/live-lifecycle-case-v3-inconclusive.json`.
+
+## Local checks and hosted frontend
+
+The exact commands and outcomes for the latest source checks are summarized in `docs/TEST_MATRIX_V1.md`. The production-mode build emits the configured `public` directory. Production is live at https://pride-coral.vercel.app (deployment `dpl_EN4YK8tc3TqLFpGNHJAr9zHi22Zk`, `READY`); its public manifest identifies the deployed addresses and hashes. The page rendered all three live records, and history disclosures showed `UPHELD`, `REJECTED`, and `INCONCLUSIVE` with their finalized evidence. The browser session had no injected EIP-1193 provider, so real browser wallet transactions were not tested. Mocked EIP-1193 tests and live Studionet transactions are reported separately.
+
+The final release remains **NOT READY FOR SUBMISSION** until a genuine injected-wallet browser run is complete. Both Actions runs passed on source release commit `8084d4f045309abd09244477a5e045b9676dd5ca`; final freeze commit CI is tracked in PR #1. The independent Vercel production deployment is READY, while its legacy GitHub status context remains failed.

@@ -2,6 +2,8 @@ import { connectInjectedWallet, subscribeWallet, switchInjectedWalletToStudionet
 
 let sdkPromise;
 let configPromise;
+let deploymentWritesEnabled = false;
+let relianceGateWritesEnabled = false;
 let mountedTarget;
 let notifyUser = () => {};
 let records = [];
@@ -10,6 +12,8 @@ let operation = null;
 let walletProvider = null;
 let currentChainId = '';
 let publishers = [];
+let standings = {};
+let gateHtml = '';
 let disconnectedByUser = false;
 const TX_KEY = 'pride-studionet-transactions-v1';
 let transactions = [];
@@ -18,6 +22,10 @@ try { transactions = JSON.parse(localStorage.getItem(TX_KEY) || '[]').slice(0, 3
 function rememberTransaction(entry) {
   transactions = [entry, ...transactions.filter((item) => item.hash !== entry.hash)].slice(0, 30);
   try { localStorage.setItem(TX_KEY, JSON.stringify(transactions)); } catch { /* tx hash remains in the page state */ }
+}
+
+function walletIsReady() {
+  return Boolean(connectedAddress && currentChainId === '0xf22f');
 }
 
 const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -34,6 +42,10 @@ async function deployment() {
   configPromise ??= fetch('./assets/deployment.json', { cache: 'no-store' }).then(async (response) => {
     if (!response.ok) throw new Error('Deployment manifest could not be loaded.');
     return response.json();
+  }).then((config) => {
+    deploymentWritesEnabled = config.writesEnabled === true;
+    relianceGateWritesEnabled = config.gateWritesEnabled === true;
+    return config;
   });
   return configPromise;
 }
@@ -62,7 +74,7 @@ async function discoverWallet() {
 function frame() {
   if (!mountedTarget) return;
   const configured = mountedTarget.dataset.configured === 'true';
-  const walletReady = Boolean(connectedAddress && currentChainId === '0xf22f');
+  const walletReady = walletIsReady() && deploymentWritesEnabled;
   const headerStatus = document.getElementById('wallet-header-status');
   const headerAction = document.getElementById('wallet-header-action');
   if (headerStatus) {
@@ -90,9 +102,9 @@ function frame() {
     <section class="network-hero panel">
       <span class="eyebrow">REAL NETWORK</span>
       <h1 class="title">Public chain records <span class="gradient-text">you can verify.</span></h1>
-      <p class="lead">Browse finalized Studionet records without connecting. Connect a wallet to register a publisher or commitment, check sources, submit an amendment, or challenge a record. Your wallet approves every write.</p>
+      <p class="lead">Browse finalized Studionet records without connecting. Connect a wallet to register a publisher or commitment, observe a source, submit an amendment, or challenge a record. Any wallet can submit an eligible source observation.</p>
       <div class="network-state" role="status" aria-live="polite">${esc(operation?.message || (!configured ? 'Deployment is not configured.' : (connectedAddress ? (currentChainId && currentChainId !== '0xf22f' ? 'Wrong network. Switch your wallet to GenLayer Studionet (chain 61999), then reconnect.' : `Connected to Studionet as ${connectedAddress}. You can use the publisher and commitment actions below.`) : 'Wallet not connected. Public records are read-only until you connect.')))}</div>
-      ${walletReady ? '' : '<p class="wallet-helper">Use <strong>Connect wallet</strong> in the top bar before writing. PRIDE never asks for your recovery phrase.</p>'}
+      ${deploymentWritesEnabled ? (walletReady ? '' : '<p class="wallet-helper">Use <strong>Connect wallet</strong> in the top bar before writing. PRIDE never asks for your recovery phrase.</p>') : '<p class="wallet-helper">Writes are disabled because the checked out contracts do not match both source fingerprints recorded for this deployment.</p>'}
       ${transactions.length ? `<details class="section"><summary>Wallet transaction history (${transactions.length})</summary>${transactions.map((item) => `<p><b>${esc(item.action)}</b> · ${esc(item.status)} · ${esc(item.at)} · <a class="link-action" href="https://explorer-studio.genlayer.com/tx/${encodeURIComponent(item.hash)}" target="_blank" rel="noopener noreferrer">${esc(item.hash.slice(0, 12))}… ↗</a></p>`).join('')}</details>` : ''}
     </section>
     ${!configured ? `<section class="section banner">No contract address is set in <code>assets/deployment.json</code>. PRIDE will not show demo records in Real Network mode or pretend a deployment exists.</section>` : ''}
@@ -109,8 +121,9 @@ function frame() {
           <div class="form-actions"><button class="btn btn-primary" type="submit">Register on GenLayer</button></div>
         </form>
       </div>` : '<div class="panel wallet-connect-prompt"><h3>Connect wallet to write</h3><p>After connecting on Studionet, you can register a publisher and create commitments. Read-only records below remain available without a wallet.</p></div>'}
-      <div class="network-records">${records.length ? records.map((row) => `<article class="panel network-record"><div><span class="chip neutral">${esc(row.policy_type)}</span> ${row.active ? '<span class="chip good">Active</span>' : '<span class="chip">Inactive</span>'}<h3>${esc(row.title)} · v${Number(row.version || 1)}</h3><p>${esc(row.promise)}</p><a href="${esc(row.source_url)}" target="_blank" rel="noopener noreferrer">Open recorded source ↗</a><small>Signer ${esc(row.owner)} · Baseline SHA-256 ${esc(row.baseline_digest)} · Charter ${Number(row.id)}</small></div><div class="network-record-actions"><button class="btn btn-outline" data-network-check="${Number(row.id)}" ${walletReady && row.active && row.owner?.toLowerCase() === connectedAddress.toLowerCase() ? '' : 'disabled'}>Check source</button><button class="btn btn-outline" data-network-history="${Number(row.id)}">View checkpoints</button><button class="btn btn-outline" data-network-amend="${Number(row.id)}" ${walletReady && row.owner?.toLowerCase() === connectedAddress.toLowerCase() ? '' : 'disabled'}>Amend</button><button class="btn btn-outline" data-network-challenge="${Number(row.id)}" ${walletReady ? '' : 'disabled'}>Challenge</button></div></article>`).join('') : '<div class="empty">No finalized commitments are recorded at this contract.</div>'}</div>
+      <div class="network-records">${records.length ? records.map((row) => `<article class="panel network-record"><div><span class="chip neutral">${esc(row.policy_type)}</span> ${row.active ? '<span class="chip good">Active</span>' : '<span class="chip">Inactive</span>'} <span class="chip neutral">${esc(standings[row.id]?.standing || 'Loading standing…')}</span><h3>${esc(row.title)} · v${Number(row.version || 1)}</h3><p>${esc(row.promise)}</p><a href="${esc(row.source_url)}" target="_blank" rel="noopener noreferrer">Open recorded source ↗</a><small>Signer ${esc(row.owner)} · Baseline SHA-256 ${esc(row.baseline_digest)} · Charter ${Number(row.id)}</small></div><div class="network-record-actions"><button class="btn btn-outline" data-network-observe="${Number(row.id)}" ${walletReady ? '' : 'disabled'}>Observe source</button><button class="btn btn-outline" data-network-check="${Number(row.id)}" ${walletReady && row.active && row.owner?.toLowerCase() === connectedAddress.toLowerCase() ? '' : 'disabled'}>Issuer check</button><button class="btn btn-outline" data-network-history="${Number(row.id)}">View evidence & cases</button><button class="btn btn-outline" data-network-amend="${Number(row.id)}" ${walletReady && row.owner?.toLowerCase() === connectedAddress.toLowerCase() ? '' : 'disabled'}>Amend</button><button class="btn btn-outline" data-network-challenge="${Number(row.id)}" ${walletReady ? '' : 'disabled'}>Challenge</button></div></article>`).join('') : '<div class="empty">No finalized commitments are recorded at this contract.</div>'}</div>
       <div id="network-checkpoints" class="section" aria-live="polite"></div>
+      ${gateHtml}
     </section>` : ''}`;
 }
 
@@ -139,9 +152,29 @@ async function readCharters() {
   const parsed = typeof value === 'string' ? JSON.parse(value) : value;
   if (!Array.isArray(parsed)) throw new Error('The configured contract returned an unexpected charter list.');
   records = parsed;
+  standings = {};
+  await Promise.all(records.map(async (row) => {
+    try { standings[row.id] = await readContractJson(client, sdk, cfg, 'get_standing', [Number(row.id)]); }
+    catch { standings[row.id] = { standing: 'UNAVAILABLE' }; }
+  }));
   const publisherValue = await client.readContract({ address: cfg.contractAddress, functionName: 'get_publishers', args: [], transactionHashVariant: sdk.TransactionHashVariant.LATEST_FINAL });
   publishers = typeof publisherValue === 'string' ? JSON.parse(publisherValue) : publisherValue;
   if (!Array.isArray(publishers)) throw new Error('The configured contract returned an unexpected publisher list.');
+  gateHtml = '';
+  if (allowedAddress(cfg.relianceGateAddress)) {
+    try {
+      const gateConfig = await readContractJson(client, sdk, { ...cfg, contractAddress: cfg.relianceGateAddress }, 'get_config');
+      const decisions = await readContractJson(client, sdk, { ...cfg, contractAddress: cfg.relianceGateAddress }, 'get_decisions');
+      const gateWriteMessage = !relianceGateWritesEnabled
+        ? 'Gate writes are disabled because live cross-contract authorization is not verified.'
+        : !connectedAddress
+          ? 'Connect the configured operator wallet to check finalized PRIDE evidence.'
+          : currentChainId !== '0xf22f'
+            ? 'Switch the connected wallet to GenLayer Studionet to check finalized PRIDE evidence.'
+            : 'The connected wallet is not the configured Gate operator.';
+      gateHtml = `<section class="section panel"><h2>Reliance Gate</h2><p>This separate gate checks finalized, version-matched source evidence. Operator: ${esc(gateConfig.operator)} · commitment ${Number(gateConfig.charter_id)} · required version ${Number(gateConfig.expected_version)} · qualifying outcome ${esc(gateConfig.required_checkpoint_outcome || 'MATCHES')}.</p>${Array.isArray(decisions) && decisions.length ? decisions.map((item) => `<p>Action ${esc(item.action_id)} · ${item.permitted ? 'PERMITTED' : 'REJECTED'} · ${esc(item.reason)} · ${esc(item.standing)}${item.has_checkpoint ? ` · checkpoint ${Number(item.checkpoint_id)} ${esc(item.checkpoint_outcome)} · SHA-256 ${esc(item.checkpoint_digest)}` : ' · no qualifying checkpoint'}</p>`).join('') : '<p>No gate decisions yet.</p>'}${relianceGateWritesEnabled && connectedAddress && currentChainId === '0xf22f' && gateConfig.operator?.toLowerCase() === connectedAddress.toLowerCase() ? '<form id="network-gate-form" class="form-grid"><div class="field"><label for="gate-action-id">Unique action ID</label><input id="gate-action-id" name="action_id" maxlength="100" required /></div><button class="btn btn-primary" type="submit">Check finalized PRIDE evidence</button></form>' : `<p>${gateWriteMessage}</p>`}</section>`;
+    } catch { gateHtml = '<section class="section panel"><h2>Reliance Gate</h2><p>Configured gate could not be read. Its contract address or cross-contract view is unavailable.</p></section>'; }
+  }
 }
 
 async function readContractJson(client, sdk, cfg, functionName, args = []) {
@@ -153,6 +186,13 @@ async function readContractJson(client, sdk, cfg, functionName, args = []) {
 
 async function verifyWriteReadback(functionName, args, client, sdk, cfg, result) {
   if (!result || result.ok !== true) throw new Error('Contract return data was not a verified { ok: true } result.');
+  if (functionName === 'authorize') {
+    const gateCfg = { ...cfg, contractAddress: cfg.relianceGateAddress };
+    const decisions = await readContractJson(client, sdk, gateCfg, 'get_decisions', [Number(result.decision_id), 1]);
+    if (!Array.isArray(decisions) || !decisions.some((item) => item.action_id === args[0] && item.reason === result.reason && item.permitted === (result.decision === 'PERMITTED'))) throw new Error('Gate transaction finalized, but its decision was not present in finalized gate state.');
+    await readCharters();
+    return;
+  }
   await readCharters();
   const address = connectedAddress.toLowerCase();
   if (functionName === 'register_publisher' && !publishers.some((p) => p.active && p.owner?.toLowerCase() === address)) throw new Error('Finalized transaction did not create the connected wallet publisher record.');
@@ -163,6 +203,11 @@ async function verifyWriteReadback(functionName, args, client, sdk, cfg, result)
     const rows = await readContractJson(client, sdk, cfg, 'get_checks', [Number(args[0])]);
     const id = Number(result?.checkpoint_id);
     if (!Array.isArray(rows) || !rows.some((row) => Number(row.id) === id && row.content_digest === result?.digest && row.source_url === args[1])) throw new Error('Checkpoint transaction finalized, but its checkpoint was not verified in state.');
+  }
+  if (functionName === 'observe_source') {
+    const rows = await readContractJson(client, sdk, cfg, 'get_checks', [Number(args[0])]);
+    const id = Number(result?.checkpoint_id);
+    if (!Array.isArray(rows) || !rows.some((row) => Number(row.id) === id && row.content_digest === result?.digest && row.source_url === args[1] && row.observer?.toLowerCase() === address)) throw new Error('Observation finalized, but its source digest and observer were not verified in finalized state.');
   }
   if (functionName === 'propose_amendment') {
     const rows = await readContractJson(client, sdk, cfg, 'get_amendments', [Number(args[0])]);
@@ -176,7 +221,7 @@ async function verifyWriteReadback(functionName, args, client, sdk, cfg, result)
     }
     if (!found) throw new Error('Amendment activation was not present in finalized state.');
   }
-  if (functionName === 'open_challenge' || functionName === 'rebut_challenge' || functionName === 'resolve_challenge') {
+  if (functionName === 'open_challenge' || functionName === 'rebut_challenge' || functionName === 'adjudicate_challenge' || functionName === 'expire_challenge') {
     const charterIds = functionName === 'open_challenge' ? [Number(args[0])] : records.map((r) => Number(r.id));
     let matched = false;
     for (const charterId of charterIds) {
@@ -184,7 +229,9 @@ async function verifyWriteReadback(functionName, args, client, sdk, cfg, result)
       if (!Array.isArray(items)) continue;
       matched = items.some((item) => functionName === 'open_challenge'
         ? Number(item.checkpoint_id) === Number(args[1]) && item.challenger?.toLowerCase() === address && item.evidence_quote === args[3]
-        : Number(item.id) === Number(args[0]) && (functionName === 'rebut_challenge' ? item.status === 'REBUTTED' && item.rebuttal_quote === args[2] : item.status === 'INCONCLUSIVE'));
+        : Number(item.id) === Number(args[0]) && (functionName === 'rebut_challenge' ? item.status === 'REBUTTED' && item.rebuttal_quote === args[2]
+          : functionName === 'adjudicate_challenge' ? ['UPHELD', 'REJECTED', 'INCONCLUSIVE'].includes(item.status) && item.case_id === result.case_id && item.verdict === result.outcome
+            : item.status === 'EXPIRED'));
       if (matched) break;
     }
     if (!matched) throw new Error('Challenge transaction finalized, but the expected challenge state was not found.');
@@ -232,12 +279,17 @@ async function recoverPendingTransactions() {
   }
 }
 
-async function submit(functionName, args) {
+async function submit(functionName, args, targetAddress = '') {
   const { cfg, sdk, client } = await context(true);
+  if (cfg.writesEnabled !== true) throw new Error('Pride writes are disabled until its source fingerprint matches the verified deployment.');
+  if (targetAddress && targetAddress.toLowerCase() === String(cfg.relianceGateAddress || '').toLowerCase()
+      && cfg.gateWritesEnabled !== true) {
+    throw new Error('Reliance Gate writes are disabled until cross-contract authorization is verified on Studionet.');
+  }
   operation = { message: 'Waiting for wallet signature. Review the network cost in your wallet…' };
   frame();
   const txHash = await client.writeContract({
-    address: cfg.contractAddress,
+    address: targetAddress || cfg.contractAddress,
     functionName,
     args,
     value: 0n,
@@ -301,7 +353,7 @@ export async function mountNetwork(target, notify) {
 }
 
 document.addEventListener('click', async (event) => {
-  const button = event.target.closest('button[data-network-action],button[data-network-check],button[data-network-history],button[data-network-amend],button[data-network-challenge],button[data-wallet-switch]');
+  const button = event.target.closest('button[data-network-action],button[data-network-check],button[data-network-observe],button[data-network-history],button[data-network-amend],button[data-network-challenge],button[data-wallet-switch]');
   if (!button || (!mountedTarget?.contains(button) && button.id !== 'wallet-header-action' && button.id !== 'wallet-switch-network')) return;
   try {
     if (button.dataset.walletSwitch !== undefined) {
@@ -333,6 +385,10 @@ document.addEventListener('click', async (event) => {
       const source = window.prompt('New commit-pinned raw GitHub .txt source URL in this publisher repository?');
       if (!source) return;
       await submit('check_source', [Number(button.dataset.networkCheck), source.trim()]);
+    } else if (button.dataset.networkObserve !== undefined) {
+      const source = window.prompt('Commit-pinned raw GitHub .txt source URL in the publisher declared repository?');
+      if (!source) return;
+      await submit('observe_source', [Number(button.dataset.networkObserve), source.trim()]);
     } else if (button.dataset.networkAmend !== undefined) {
       const id = Number(button.dataset.networkAmend);
       const source = window.prompt('New immutable raw GitHub .txt source URL?');
@@ -361,7 +417,10 @@ document.addEventListener('click', async (event) => {
       const amendments = typeof amendmentsValue === 'string' ? JSON.parse(amendmentsValue) : amendmentsValue;
       const challengesValue = await client.readContract({ address: cfg.contractAddress, functionName: 'get_challenges', args: [Number(button.dataset.networkHistory)], transactionHashVariant: sdk.TransactionHashVariant.LATEST_FINAL });
       const challenges = typeof challengesValue === 'string' ? JSON.parse(challengesValue) : challengesValue;
-      output.innerHTML = `<div class="section-heading"><div><h2>Verified history for commitment ${Number(button.dataset.networkHistory)}</h2><p>Finalized snapshots include full source text, content digest, outcome, and exact supporting quote.</p></div></div>${history.length ? history.map((item) => `<article class="panel network-record"><div><span class="chip warn">${esc(item.outcome)}</span><p>${esc(item.evidence_excerpt)}</p><code>${esc(item.content_digest)}</code><small>${esc(item.source_url)}</small><details><summary>Inspect captured source</summary><pre>${esc(item.text)}</pre></details></div></article>`).join('') : '<div class="empty">No checkpoints are stored for this commitment.</div>'}<h3>Amendments</h3>${amendments.length ? amendments.map((item) => `<article class="panel"><p>Version ${Number(item.version)} · ${item.active ? 'Activated' : 'Pending activation'}</p><p>${esc(item.terms)}</p><code>Previous ${esc(item.previous_digest)} → next ${esc(item.next_digest)}</code>${!item.active ? `<button class="btn btn-outline" data-network-action="activate-amendment" data-id="${Number(item.id)}">Activate amendment</button>` : ''}</article>`).join('') : '<div class="empty">No amendments.</div>'}<h3>Challenges</h3>${challenges.length ? challenges.map((item) => `<article class="panel"><p>Challenge ${Number(item.id)} · ${esc(item.status)}</p><p>${esc(item.evidence_quote)}</p><small>Evidence SHA-256 ${esc(item.evidence_digest)}</small>${item.status === 'OPEN' ? `<button class="btn btn-outline" data-network-action="rebut-challenge" data-id="${Number(item.id)}">Rebut with evidence</button><button class="btn btn-outline" data-network-action="resolve-challenge" data-id="${Number(item.id)}">Close inconclusive</button>` : ''}</article>`).join('') : '<div class="empty">No challenges.</div>'}`;
+      const versions = await readContractJson(client, sdk, cfg, 'get_versions', [Number(button.dataset.networkHistory)]);
+      const walletReady = walletIsReady();
+      output.innerHTML = `<div class="section-heading"><div><h2>Verified history for commitment ${Number(button.dataset.networkHistory)}</h2><p>Finalized snapshots include full source text, content digest, observer, source role and recorded time.</p></div></div>${history.length ? history.map((item) => `<article class="panel network-record"><div><span class="chip warn">${esc(item.outcome)}</span><p>${esc(item.evidence_excerpt)}</p><code>${esc(item.content_digest)}</code><small>${esc(item.source_role)} · ${esc(item.observer)} · ${esc(item.recorded_at)}</small><small>${esc(item.source_url)}</small><details><summary>Inspect captured source</summary><pre>${esc(item.text)}</pre></details></div></article>`).join('') : '<div class="empty">No checkpoints are stored for this commitment.</div>'}<h3>Amendments</h3>${amendments.length ? amendments.map((item) => `<article class="panel"><p>Version ${Number(item.version)} · ${item.active ? 'Activated' : 'Pending activation'}</p><p>${esc(item.terms)}</p><code>Previous ${esc(item.previous_digest)} → next ${esc(item.next_digest)}</code>${!item.active ? `<button class="btn btn-outline" data-network-action="activate-amendment" data-id="${Number(item.id)}">Activate amendment</button>` : ''}</article>`).join('') : '<div class="empty">No amendments.</div>'}<h3>Evidence cases</h3>${challenges.length ? challenges.map((item) => `<article class="panel"><p>Case ${esc(item.case_id)} · ${esc(item.status)} · checkpoint ${Number(item.checkpoint_id)} · v${Number(item.version)}</p><p>${esc(item.evidence_quote)}</p><small>${esc(item.evidence_role)} · evidence SHA-256 ${esc(item.evidence_digest)}</small>${item.rebuttal_digest ? `<p>Issuer rebuttal · ${esc(item.rebuttal_role)} · ${esc(item.rebuttal_quote)}</p><small>SHA-256 ${esc(item.rebuttal_digest)}</small>` : ''}${item.citation ? `<p>Finding: ${esc(item.finding_code)} · citation: ${esc(item.citation)}</p>` : ''}${item.status === 'OPEN' && walletReady && item.issuer?.toLowerCase() === connectedAddress.toLowerCase() ? `<button class="btn btn-outline" data-network-action="rebut-challenge" data-id="${Number(item.id)}">Submit rebuttal</button>` : ''}${['OPEN','REBUTTED'].includes(item.status) && walletReady ? `<button class="btn btn-outline" data-network-action="adjudicate-challenge" data-id="${Number(item.id)}">Run consensus adjudication</button><button class="btn btn-outline" data-network-action="expire-challenge" data-id="${Number(item.id)}">Expire after deadline</button>` : ''}</article>`).join('') : '<div class="empty">No evidence cases.</div>'}`;
+      output.insertAdjacentHTML('afterbegin', `<details class="panel"><summary>Commitment version history (${versions.length})</summary><pre>${esc(JSON.stringify(versions, null, 2))}</pre></details>`);
     }
   } catch (error) {
     operation = { message: error?.message || 'The network action failed.' };
@@ -371,9 +430,18 @@ document.addEventListener('click', async (event) => {
 });
 
 document.addEventListener('submit', async (event) => {
-  if (!['network-register-form', 'network-publisher-form'].includes(event.target.id) || !mountedTarget?.contains(event.target)) return;
+  if (!['network-register-form', 'network-publisher-form', 'network-gate-form'].includes(event.target.id) || !mountedTarget?.contains(event.target)) return;
   event.preventDefault();
   const data = new FormData(event.target);
+  if (event.target.id === 'network-gate-form') {
+    try {
+      const cfg = await deployment();
+      if (cfg.gateWritesEnabled !== true) throw new Error('Reliance Gate writes are disabled until cross-contract authorization is verified on Studionet.');
+      await submit('authorize', [String(data.get('action_id') || '').trim()], cfg.relianceGateAddress);
+    }
+    catch (error) { operation = { message: error?.message || 'Reliance Gate request failed.' }; frame(); notifyUser(operation.message); }
+    return;
+  }
   if (event.target.id === 'network-publisher-form') {
     try {
       await submit('register_publisher', [String(data.get('label') || '').trim(), String(data.get('repo') || '').trim()]);
@@ -401,7 +469,7 @@ document.addEventListener('submit', async (event) => {
 });
 
 document.addEventListener('click', async (event) => {
-  const button = event.target.closest('button[data-network-action="activate-amendment"],button[data-network-action="rebut-challenge"],button[data-network-action="resolve-challenge"]');
+  const button = event.target.closest('button[data-network-action="activate-amendment"],button[data-network-action="rebut-challenge"],button[data-network-action="adjudicate-challenge"],button[data-network-action="expire-challenge"]');
   if (!button || !mountedTarget?.contains(button)) return;
   try {
     const id = Number(button.dataset.id);
@@ -413,7 +481,8 @@ document.addEventListener('click', async (event) => {
       if (!quote) return;
       await submit('rebut_challenge', [id, source, quote]);
     }
-    if (button.dataset.networkAction === 'resolve-challenge') await submit('resolve_challenge', [id, 'INCONCLUSIVE']);
+    if (button.dataset.networkAction === 'adjudicate-challenge') await submit('adjudicate_challenge', [id]);
+    if (button.dataset.networkAction === 'expire-challenge') await submit('expire_challenge', [id]);
   } catch (error) {
     operation = { message: error?.message || 'The network action failed.' };
     frame();

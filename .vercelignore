@@ -1,0 +1,11 @@
+.git
+.pytest_cache
+node_modules
+artifacts
+__pycache__
+.env
+.env.*
+coverage
+playwright-report
+test-results
+public
