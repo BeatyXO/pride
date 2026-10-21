@@ -86,6 +86,7 @@ function frame() {
   const headerSwitch = document.getElementById('wallet-switch-network');
   if (headerSwitch) {
     const wrongNetwork = Boolean(walletProvider && currentChainId && currentChainId !== '0xf22f');
+    headerSwitch.hidden = !wrongNetwork;
     headerSwitch.style.display = wrongNetwork ? 'inline-flex' : 'none';
     headerSwitch.disabled = Boolean(operation?.message?.startsWith('Switching wallet'));
     headerSwitch.textContent = headerSwitch.disabled ? 'Switching…' : 'Switch to Studionet';
