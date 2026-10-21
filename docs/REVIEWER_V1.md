@@ -18,10 +18,8 @@
 3. The same source was deployed as a second test instance at `0xa48F2775CD457Fa2F7b4bf31d81C635367726F65`; its finalized `PERMITTED` transaction is `0x2a2730d2f1dfd1f1a6e408eda9ad93f2bd52a44811891e5016b1c110cf17242e`. Both decisions match independent Pride state reads.
 4. The original Gate's `LATEST_FINAL` selector produced three finalized 600-second leader timeouts. The corrected standard `view()` call succeeded on both an adverse and an eligible Pride state.
 
-## Remaining submission blockers
+## Remaining production frontend checks
 
-1. Production URL https://pride-coral.vercel.app is live; its fetched deployment manifest reports the verified Studionet deployment. The public page displayed all three records and the history views revealed the corresponding `UPHELD`, `REJECTED`, and `INCONCLUSIVE` cases.
-2. The current browser session did not expose an injected EIP-1193 provider. Wallet connect/disconnect, wrong-network block, account change, real signing, transaction lifecycle, and readback therefore remain verified only by mocked-provider tests where applicable; a genuine wallet browser run is still required.
-3. Both `static-and-unit` GitHub Actions runs passed on source release commit `8084d4f045309abd09244477a5e045b9676dd5ca`; a fresh run checks the documentation freeze commit. The separate Vercel status check fails because it targets an unavailable legacy project. PR #1 records the exact comparison for its current head.
+The release source tree `02b7ac592e5cbf7649e1d99af7707086253afc9b` passed both `static-and-unit` GitHub Actions checks and was merged to `main` at `856c1907062cce8fc92df08f90791bd189f5fdcc`. The existing production alias is https://pride-eta.vercel.app; its public manifest now reports the V1 Studionet deployments, matching source hashes, and enabled writes. The separate GitHub Vercel status context references an unavailable legacy integration; it does not reflect the verified production alias manifest.
 
-Until those items are complete, the conclusion remains **NOT READY FOR SUBMISSION**.
+The remaining work is frontend verification on that production alias: confirm page rendering and challenge-history controls; connect/disconnect an injected EIP-1193 wallet; test wrong-network blocking and account changes; submit an authorized wallet transaction; and verify transaction finality plus independent contract state readback. Existing mocked-provider tests do not count as real wallet execution. These checks have not yet been completed.

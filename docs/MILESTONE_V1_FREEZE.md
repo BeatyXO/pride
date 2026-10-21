@@ -2,7 +2,7 @@
 
 ## Source checkpoints
 
-The milestone began at commit `f5f17ec1aedeb9542ba8cf6e0ee6b843abad1b88`, tree `d2f7cab4651daabe00a19a519046498f87bd9fb7`. Pride source remains unchanged from that reviewed checkpoint. The Gate source was corrected to call the Pride view through the documented synchronous API and redeployed after three live 600-second timeouts. Source release commit `8084d4f045309abd09244477a5e045b9676dd5ca` (tree `6979a9c10232e266d79401c1f27f7423af3ca16e`) passed both GitHub Actions checks. The final documentation freeze commit and baseline comparison URL are linked in PR #1.
+The milestone began at commit `f5f17ec1aedeb9542ba8cf6e0ee6b843abad1b88`, tree `d2f7cab4651daabe00a19a519046498f87bd9fb7`. Pride source remains unchanged from that reviewed checkpoint. The Gate source was corrected to call the Pride view through the documented synchronous API and redeployed after three live 600-second timeouts. Release tree `02b7ac592e5cbf7649e1d99af7707086253afc9b` passed both GitHub Actions checks and was merged to `main` at `856c1907062cce8fc92df08f90791bd189f5fdcc`. The baseline-to-merged-main comparison is https://github.com/BeatyXO/pride/compare/1537599fa4bb68df6d1fbb07b47c028c4eff31bc...856c1907062cce8fc92df08f90791bd189f5fdcc.
 
 | File | Final SHA-256 | Studionet deployment | Exact deployed source parity |
 | --- | --- | --- | --- |
@@ -22,4 +22,4 @@ Network: GenLayer Studionet, chain `61999` (`0xF22F`), RPC `https://studio.genla
 
 ## Remaining release gates
 
-Production is live at https://pride-coral.vercel.app (deployment `dpl_EN4YK8tc3TqLFpGNHJAr9zHi22Zk`, `READY`). The public deployment manifest was fetched and the live records and case-history disclosures were checked. The current browser session did not expose an injected wallet. Both `static-and-unit` checks passed for the source release commit; the Vercel check in PR #1 separately fails on its legacy unavailable project context. Genuine browser wallet flows remain outstanding, so the release remains **NOT READY FOR SUBMISSION**. The final documentation freeze HEAD and compare URL are in PR #1.
+The existing production alias is https://pride-eta.vercel.app. After merge, its public manifest was fetched and showed the verified Pride/Gate addresses, source hashes, source parity, and enabled writes. The release checks passed on the merged source tree. The GitHub Vercel status context still points at the legacy unavailable `beatycat/pride` integration and is separate from the public alias. Remaining release work is frontend verification on `pride-eta.vercel.app`: render and history controls, injected-wallet connect/disconnect, wrong-network blocking, account changes, signed transaction lifecycle/finality, and contract state readback. Those browser checks are not yet claimed as complete.
