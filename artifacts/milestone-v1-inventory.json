@@ -59,9 +59,10 @@
     "deploymentManifest": "Pride and Gate source hashes match",
     "vercelProductionBuild": "passed; public/ emitted",
     "productionDeployment": "READY",
-    "githubCiFinalHead": "pending final push",
+    "githubCiSourceReleaseCommit": "8084d4f045309abd09244477a5e045b9676dd5ca; both static-and-unit runs passed",
+    "githubVercelStatusContext": "failed: legacy unavailable beatycat/pride integration; independent production deployment is READY",
     "gitHubPr": "https://github.com/BeatyXO/pride/pull/1",
-    "compareUrl": "pending final pushed HEAD"
+    "compareUrl": "final documentation freeze commit compare is recorded in PR #1"
   },
   "reviewEvidence": [
     "README.md",

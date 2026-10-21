@@ -18,7 +18,7 @@ Latest local source checks were run on 2026-10-21 against the corrected Gate sou
 | Historical Gate failure and fix | Three finalized old-source timeouts followed by corrected-source calls | Earlier `LATEST_FINAL` calls ended in 600-second `LEADER_EXEC_TIMEOUT`; standard `view()` calls yielded both Gate decisions | Cause is supported by one-line source delta and A/B calls; RPC execution trace was unavailable. |
 | Production frontend and history | Browser opened https://pride-coral.vercel.app/#/network | HTTP deployment manifest fetched; all three live records rendered; history disclosures opened and showed `UPHELD`, `REJECTED`, and `INCONCLUSIVE` case details | Read-only browser session; it did not provide an injected EIP-1193 wallet. |
 | Wallet behavior | `npm test` mocked EIP-1193 provider tests | Connect/disconnect, chain switching, wrong-chain blocking, account/chain event updates, rejection, write state and finalized readback assertions passed | No genuine extension-based public-site connect/sign/readback was completed. |
-| GitHub CI | PR #1 checks on final pushed release SHA | Pending final push and subsequent check run | Earlier PR checks are not evidence for final release HEAD. |
+| GitHub Actions CI | PR #1 `static-and-unit` checks on source release commit `8084d4f045309abd09244477a5e045b9676dd5ca` | Both runs passed; the workflow ran build, JavaScript and Python suites, syntax, manifest, Python compilation, both lints, and Direct Mode. A fresh run is triggered by the documentation freeze commit. | The distinct Vercel status check is failing because it targets a legacy `beatycat/pride` project not available to the active Vercel account. The manually deployed production project is separately READY. |
 
 ### Production deployment
 
@@ -28,4 +28,4 @@ Latest local source checks were run on 2026-10-21 against the corrected Gate sou
 - Build command: `npm run build`; output directory: `public`.
 - The public manifest reports Studionet chain 61999, Pride and Gate addresses, deployment transaction hashes, source fingerprints, and Gate live-verification flags. No private key is required in Vercel configuration.
 
-The milestone remains **NOT READY FOR SUBMISSION** until genuine injected-wallet browser verification and final-head GitHub CI are complete.
+The milestone remains **NOT READY FOR SUBMISSION** until genuine injected-wallet browser verification is complete. Final freeze commit and compare URL are linked from PR #1.

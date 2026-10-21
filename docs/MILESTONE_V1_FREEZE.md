@@ -2,7 +2,7 @@
 
 ## Source checkpoints
 
-The milestone began at commit `f5f17ec1aedeb9542ba8cf6e0ee6b843abad1b88`, tree `d2f7cab4651daabe00a19a519046498f87bd9fb7`. Pride source remains unchanged from that reviewed checkpoint. The Gate source was corrected to call the Pride view through the documented synchronous API and redeployed after three live 600-second timeouts. The final repository HEAD, tree, source hashes, and baseline comparison URL are recorded here after final CI and deployment checks complete.
+The milestone began at commit `f5f17ec1aedeb9542ba8cf6e0ee6b843abad1b88`, tree `d2f7cab4651daabe00a19a519046498f87bd9fb7`. Pride source remains unchanged from that reviewed checkpoint. The Gate source was corrected to call the Pride view through the documented synchronous API and redeployed after three live 600-second timeouts. Source release commit `8084d4f045309abd09244477a5e045b9676dd5ca` (tree `6979a9c10232e266d79401c1f27f7423af3ca16e`) passed both GitHub Actions checks. The final documentation freeze commit and baseline comparison URL are linked in PR #1.
 
 | File | Final SHA-256 | Studionet deployment | Exact deployed source parity |
 | --- | --- | --- | --- |
@@ -22,4 +22,4 @@ Network: GenLayer Studionet, chain `61999` (`0xF22F`), RPC `https://studio.genla
 
 ## Remaining release gates
 
-Production is live at https://pride-coral.vercel.app (deployment `dpl_EN4YK8tc3TqLFpGNHJAr9zHi22Zk`, `READY`). The public deployment manifest was fetched and the live records and case-history disclosures were checked. The current browser session did not expose an injected wallet. Genuine browser wallet flows and final-head green CI are outstanding, so the release remains **NOT READY FOR SUBMISSION**. Final HEAD/tree and compare URL are to be recorded after pushing the release commit.
+Production is live at https://pride-coral.vercel.app (deployment `dpl_EN4YK8tc3TqLFpGNHJAr9zHi22Zk`, `READY`). The public deployment manifest was fetched and the live records and case-history disclosures were checked. The current browser session did not expose an injected wallet. Both `static-and-unit` checks passed for the source release commit; the Vercel check in PR #1 separately fails on its legacy unavailable project context. Genuine browser wallet flows remain outstanding, so the release remains **NOT READY FOR SUBMISSION**. The final documentation freeze HEAD and compare URL are in PR #1.

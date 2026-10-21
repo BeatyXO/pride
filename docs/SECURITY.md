@@ -27,7 +27,7 @@ The separate Reliance Gate binds a PRIDE contract, charter, and expected version
 - Direct Mode source and model responses are controlled test fixtures. They do not prove live source retrieval or Studionet consensus.
 - Direct Mode and simulator tests remain test evidence only. Live Gate `REJECTED` and `PERMITTED` transactions now prove Studionet cross-contract execution, with independent state readbacks.
 - The live Pride matrix now includes `UPHELD`, `REJECTED`, and `INCONCLUSIVE`; exact transactions and post-adjudication reads are recorded in separate JSON evidence files.
-- Production is deployed at https://pride-coral.vercel.app and its public live records and case-history controls were checked in-browser. The browser session had no injected EIP-1193 provider: mocked-provider tests do not substitute for a genuine connect/write/readback session. The latest green GitHub CI run must also be verified against the final pushed HEAD.
+- Production is deployed at https://pride-coral.vercel.app and its public live records and case-history controls were checked in-browser. The browser session had no injected EIP-1193 provider: mocked-provider tests do not substitute for a genuine connect/write/readback session. Both GitHub Actions runs passed on source release commit `8084d4f045309abd09244477a5e045b9676dd5ca`; the final documentation freeze commit receives a fresh check. A separate Vercel PR status fails on its legacy unavailable project integration.
 - V0.3 deployment data is historical only.
 
 The contracts have no payable entrypoints, asset transfers, bonds, slashing, or custody. Never put a private key or seed phrase in frontend or Vercel environment variables.

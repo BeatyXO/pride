@@ -22,6 +22,6 @@
 
 1. Production URL https://pride-coral.vercel.app is live; its fetched deployment manifest reports the verified Studionet deployment. The public page displayed all three records and the history views revealed the corresponding `UPHELD`, `REJECTED`, and `INCONCLUSIVE` cases.
 2. The current browser session did not expose an injected EIP-1193 provider. Wallet connect/disconnect, wrong-network block, account change, real signing, transaction lifecycle, and readback therefore remain verified only by mocked-provider tests where applicable; a genuine wallet browser run is still required.
-3. Final-head GitHub CI must complete green; then record the pushed release commit and exact baseline-to-final compare URL in PR #1 and the freeze evidence.
+3. Both `static-and-unit` GitHub Actions runs passed on source release commit `8084d4f045309abd09244477a5e045b9676dd5ca`; a fresh run checks the documentation freeze commit. The separate Vercel status check fails because it targets an unavailable legacy project. PR #1 records the exact comparison for its current head.
 
 Until those items are complete, the conclusion remains **NOT READY FOR SUBMISSION**.

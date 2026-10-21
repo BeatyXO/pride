@@ -7,7 +7,7 @@
 - Baseline Pride SHA-256: `4594532457829e48fd57bd89a7adfaf7bfa20cb3f1f478d411606af33f84de77`.
 - Current Pride SHA-256: `9518a7f7b31c015e6c406e4577768b8a6af9bbefa55b1de4439f61e85c3a3504`.
 - Corrected Gate SHA-256: `08686bfdaf4fd79b938c280c8577b1b119cb35316fd74d14ac9fce1145d6a05a`.
-- Final pushed HEAD and verified SHA-to-SHA comparison URL are recorded in PR #1 and `docs/MILESTONE_V1_FREEZE.md` after the release commit.
+- Source release commit `8084d4f045309abd09244477a5e045b9676dd5ca` passed GitHub Actions. The current exact PR head and baseline SHA-to-SHA compare URL are recorded in PR #1 after the documentation freeze update.
 
 The baseline contains the earlier Pride implementation and no Reliance Gate. V1 adds bounded commit-pinned source capture, canonical publisher and charter state, append-only amendment history, frozen evidence capsules, rebuttal/adjudication/expiry controls, canonical standing, and an operator-bound consumer Gate. The Gate's original `LATEST_FINAL` state selector caused repeated live leader timeouts. Replacing it with GenLayer's documented current-block `view()` call now yields finalized decisions.
 
@@ -37,8 +37,8 @@ The baseline contains the earlier Pride implementation and no Reliance Gate. V1 
 
 - Local suite and final build results are maintained in `docs/TEST_MATRIX_V1.md` and `docs/LIVE_EVIDENCE.md` after the source and manifest freeze.
 - `vercel.json` configures `npm run build` with output directory `public`; the production-mode local build passed on 2026-10-21. Production is live at https://pride-coral.vercel.app (deployment `dpl_EN4YK8tc3TqLFpGNHJAr9zHi22Zk`, `READY`). HTTP manifest readback identifies the verified Studionet addresses and source hashes. The production browser rendered all three records and opened public evidence/case history for all three charters. The browser session had no injected EIP-1193 provider, so actual browser signing, wallet account/network transitions, and transaction readback remain unverified there; these flows are separately covered by mocked-provider tests.
-- GitHub checks for the final release commit remain unverified. The last observed PR head before this uncommitted release update was `06fd2c1b42e4c53692cbf5a03f6b0bcb1a922cd3`; do not treat that earlier run as final-head CI.
+- Both `static-and-unit` GitHub Actions runs passed on source release commit `8084d4f045309abd09244477a5e045b9676dd5ca`. They ran `npm ci`, build, JavaScript tests, Python tests, source syntax checks, manifest verification, Python compilation, both linters, and Direct Mode. The separate Vercel status check failed because it still targets the unavailable `beatycat/pride` integration; the manually deployed `ifem1s-projects/pride` production deployment is READY at the URL above. The final documentation freeze commit is followed by a fresh Actions check.
 
 ## Disposition
 
-The live Studionet contract and adjudication capabilities listed above and the read-only production frontend are verified. The milestone remains **not ready for submission** until genuine injected-wallet browser flows and final-head CI are independently verified and the final comparison and artifact inventory are frozen.
+The live Studionet contract and adjudication capabilities listed above and the read-only production frontend are verified. The milestone remains **not ready for submission** until genuine injected-wallet browser flows are independently verified and the final comparison and artifact inventory are frozen.
