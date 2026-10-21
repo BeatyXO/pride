@@ -1,7 +1,7 @@
 # PRIDE V1 submission status
 
-Status: **NOT READY FOR SUBMISSION**.
+Status: **NOT READY FOR SUBMISSION** while genuine browser-wallet verification and final-head CI remain outstanding.
 
-The Pride contract and Reliance Gate have active Studionet deployments with source hashes matching the local release manifest. A live Pride `UPHELD` case and the local test/build checks are documented. The Gate call failure has been reproduced twice on Studionet, but only as finalized leader timeouts with no recorded decisions. The available RPC does not provide an execution trace method.
+The live Studionet portion is now verified. Pride and corrected Gate source parity were independently checked from deployed source. Gate `REJECTED` and `PERMITTED` transactions finalized successfully and their decision records match independent Pride readbacks. Live Pride cases now cover `UPHELD`, `REJECTED`, and `INCONCLUSIVE`; detailed receipts and final state are in the three case JSON files and `docs/live-gate-decisions-v1.json`.
 
-The live Gate `PERMITTED`/`REJECTED` decision matrix, live Pride `REJECTED`/`INCONCLUSIVE` cases, public Vercel production URL with injected-wallet transaction evidence, and a green final GitHub CI run are not verified. Release documentation and the baseline-to-pushed-head comparison are in PR #1; use its latest commit and check status rather than relying on an older snapshot. These blockers must be closed before status can change. See `docs/REVIEWER_V1.md` for the concrete blockers and `docs/TEST_MATRIX_V1.md` for the evidence boundaries.
+Production is live at https://pride-coral.vercel.app. The production page served live Studionet records and opened the evidence/history views for `UPHELD`, `REJECTED`, and `INCONCLUSIVE`. The browser environment had no injected wallet; the actual wallet connect, account/network changes, signing, transaction lifecycle, and resulting readback still need a genuine browser session. Final-head CI, exact compare URL, and a refreshed inventory remain to be recorded after the release commit. See `docs/REVIEWER_V1.md` for current blockers.

@@ -8,7 +8,7 @@ PRIDE is a public commitment registry built as GenLayer Intelligent Contracts. T
 - Permissionless observations are limited to the publisher's declared repository. This provides reproducible, independent wallet participation, not an independent authority registry.
 - Challenge capsules bind the relevant version, source digests, exact evidence, parties, and lifecycle times. Third-party claims are labeled unverified and cannot alone support an upheld finding. A `MATCHES` checkpoint may be challenged only when it carries a verified exact citation.
 - The issuer's rebuttal window closes strictly before `opened_at + 3600` seconds. Adjudication can begin at the deadline; an issuer cannot change that deadline.
-- The separate `PrideRelianceGate` is intended to permit only an active commitment at the expected version with a current-version `MATCHES` checkpoint, matching publisher-repository scope and captured-content digest, and no unresolved or adverse case. Missing evidence fails closed. `OBSERVED` standing alone never permits. The Gate source is deployed with verified source parity, but live `authorize` transactions have twice finalized `NO_MAJORITY` after `LEADER_EXEC_TIMEOUT`; no live Gate decision is verified, and Gate writes remain disabled.
+- The separate `PrideRelianceGate` permits only an active commitment at the expected version with a current-version `MATCHES` checkpoint, matching publisher-repository scope and captured-content digest, and no unresolved or adverse case. Missing evidence fails closed. `OBSERVED` standing alone never permits. Corrected live Gate source uses the documented synchronous `view()` cross-contract call; finalized live `REJECTED` and `PERMITTED` decisions match independent Pride state readbacks.
 
 See [security and trust model](docs/SECURITY.md), [product and architecture](docs/PRODUCT_SPEC.md), [baseline freeze](docs/MILESTONE_BASELINE.md), the [test matrix](docs/TEST_MATRIX_V1.md), and the [reviewer evidence](docs/REVIEWER_V1.md).
 
@@ -33,7 +33,7 @@ Direct Mode and simulator runs use controlled source/model fixtures and do not p
 
 Target network: GenLayer Studionet, chain `61999` (`0xF22F`), RPC `https://studio.genlayer.com/api`, explorer `https://explorer-studio.genlayer.com`.
 
-Current Pride and Reliance Gate deployments are recorded in `assets/deployment.json`, with finalized deployment transactions and matching local/deployed source hashes. Pride's live lifecycle includes one verified `UPHELD` case. Two authorized Gate calls finalized without majority after a 600-second leader timeout, and the independent Gate decision read remained empty. Production-mode build validates the deployment metadata and writes the manifest into `public/assets/deployment.json`; local build success does not prove a hosted Vercel deployment. No public production URL is verified.
+Current Pride and corrected Reliance Gate deployments are recorded in `assets/deployment.json`, with finalized deployment transactions and byte-for-byte deployed source parity. Live Pride adjudications now include `UPHELD`, `REJECTED`, and `INCONCLUSIVE`; live Gate `REJECTED` and `PERMITTED` decisions were independently read back and matched the corresponding Pride eligibility state. Earlier Gate deployments using a `LATEST_FINAL` state override timed out; the corrected `view()` call completed successfully. Production-mode build validates deployment metadata and writes the manifest into `public/assets/deployment.json`.
 
 Supported public Vercel build variables:
 
@@ -46,12 +46,12 @@ Supported public Vercel build variables:
 | `PRIDE_CONTRACT_ADDRESS` | `0x1A232b6eb69484B29f9Fc9A0Fa06c927083726e9` |
 | `PRIDE_DEPLOYMENT_TRANSACTION` | `0x431f90c4dfa57aadbe38480df2fbfcdafffbe7777596391d1fac8ad225520302` |
 | `PRIDE_SOURCE_SHA256` | `9518a7f7b31c015e6c406e4577768b8a6af9bbefa55b1de4439f61e85c3a3504` |
-| `PRIDE_RELIANCE_GATE_ADDRESS` | `0x5cEeD74e1465da8D962C1DAe98903F72089E0A18` |
-| `PRIDE_RELIANCE_GATE_DEPLOYMENT_TRANSACTION` | `0x796c3b7972a66045b806470362032a7b9f182a0820be6372a934dc1132eaaa60` |
-| `PRIDE_RELIANCE_GATE_SOURCE_SHA256` | `0465495b95c2afb9a833496f40becbea91daaf907e7c50af77ca50084a218c3f` |
+| `PRIDE_RELIANCE_GATE_ADDRESS` | `0x7eF1f14639e1F6DA28E4912Ec7D0C50DA0f8fB9a` |
+| `PRIDE_RELIANCE_GATE_DEPLOYMENT_TRANSACTION` | `0x9ccb5596afdd2460eb63cceae80895804d26b60059151f92557eec259c3a7e7a` |
+| `PRIDE_RELIANCE_GATE_SOURCE_SHA256` | `08686bfdaf4fd79b938c280c8577b1b119cb35316fd74d14ac9fce1145d6a05a` |
 
 `vercel.json` specifies `npm run build` and `public`. Never put a private key or seed phrase in Vercel.
 
 ## Release status
 
-The Pride V1 deployment has a verified live lifecycle through an `UPHELD` challenge and version-2 amendment. The Gate deployment is source-matched, but two authorized cross-contract calls finalized `NO_MAJORITY` after leader timeouts; there is no Gate decision and frontend Gate writes are disabled. Local `VERCEL=1 npm run build` passes and emits the configured `public` directory. The observed hosted Vercel deployment check failed, and no public Vercel URL or production deployment is verified. Live `REJECTED`/`INCONCLUSIVE` adjudications, Gate `PERMITTED`/`REJECTED` results, injected-wallet browser verification, and fresh green CI remain outstanding. **Release is incomplete and not ready for submission.** See [live evidence](docs/LIVE_EVIDENCE.md) and [milestone comparison](docs/MILESTONE_COMPARISON.md).
+Live Studionet evidence now covers the complete Pride case outcome matrix and Gate `PERMITTED`/`REJECTED` decisions. See [live transaction evidence](docs/LIVE_EVIDENCE.md), [case evidence](docs/live-lifecycle-case-v1.json), [case evidence: REJECTED](docs/live-lifecycle-case-v2-rejected.json), [case evidence: INCONCLUSIVE](docs/live-lifecycle-case-v3-inconclusive.json), and [Gate evidence](docs/live-gate-decisions-v1.json). The production frontend is at https://pride-coral.vercel.app. Its public chain records and case-history disclosures were verified in-browser. EIP-1193 behavior is covered by mocked-provider tests; a genuine injected-wallet session on the public site and final-head GitHub CI remain unverified, so submission readiness has not been declared.

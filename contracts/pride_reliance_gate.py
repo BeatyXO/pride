@@ -7,7 +7,6 @@ from datetime import datetime, timezone
 from dataclasses import dataclass
 import genlayer as gl
 from genlayer import *
-from genlayer.py.public_abi import StorageType
 
 MAX_DECISIONS = 256
 MAX_ACTION_ID = 100
@@ -67,7 +66,10 @@ class PrideRelianceGate(gl.Contract):
                 return json.dumps({"ok": False, "error": "ACTION_ALREADY_USED"})
         try:
             source = PrideInterface(self.pride_address)
-            raw = source.view(state=StorageType.LATEST_FINAL).get_reliance_status(int(self.charter_id))
+            # IC-to-IC views synchronously read the target's state at the
+            # current block. Use the documented view API without a storage
+            # selector; prior Studionet calls using the selector timed out.
+            raw = source.view().get_reliance_status(int(self.charter_id))
             state = json.loads(raw) if isinstance(raw, str) else raw
         except Exception:
             return json.dumps({"ok": False, "error": "PRIDE_READ_FAILED"})

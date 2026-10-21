@@ -55,7 +55,7 @@ def test_gate_reads_real_pride_contract_and_requires_positive_current_checkpoint
         assert permitted["decision"] == "PERMITTED", (permitted, engine.vm._traces)
         assert calls[-1]["address"].as_hex.lower() == pride_address.lower()
         assert calls[-1]["calldata"]["method"] == "get_reliance_status"
-        assert calls[-1]["state"] == 1
+        assert calls[-1]["state"] == 2  # Default IC view reads the current target state.
 
         # A subsequent changed checkpoint is the actual Pride object's current state.
         changed_url = BASE_URL.replace("baseline.txt", "changed.txt")

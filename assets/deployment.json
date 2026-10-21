@@ -6,23 +6,29 @@
   "contractAddress": "0x1A232b6eb69484B29f9Fc9A0Fa06c927083726e9",
   "deploymentTransaction": "0x431f90c4dfa57aadbe38480df2fbfcdafffbe7777596391d1fac8ad225520302",
   "sourceSha256": "9518a7f7b31c015e6c406e4577768b8a6af9bbefa55b1de4439f61e85c3a3504",
-  "relianceGateAddress": "0x5cEeD74e1465da8D962C1DAe98903F72089E0A18",
-  "relianceGateDeploymentTransaction": "0x796c3b7972a66045b806470362032a7b9f182a0820be6372a934dc1132eaaa60",
-  "relianceGateSourceSha256": "0465495b95c2afb9a833496f40becbea91daaf907e7c50af77ca50084a218c3f",
+  "relianceGateAddress": "0x7eF1f14639e1F6DA28E4912Ec7D0C50DA0f8fB9a",
+  "relianceGateDeploymentTransaction": "0x9ccb5596afdd2460eb63cceae80895804d26b60059151f92557eec259c3a7e7a",
+  "relianceGateSourceSha256": "08686bfdaf4fd79b938c280c8577b1b119cb35316fd74d14ac9fce1145d6a05a",
   "sourceParity": true,
   "relianceGateSourceParity": true,
   "writesEnabled": true,
-  "gateLiveVerified": false,
-  "gateWritesEnabled": false,
-  "deploymentStatus": "pride-source-parity-gate-live-unverified",
-  "gateLiveAttempt": {
-    "transactionHash": "0x6e67f5a18588a03fa0f563797542a17d5a4e8120816a920985967e1871acee98",
-    "status": "FINALIZED",
-    "consensus": "NO_MAJORITY",
-    "leaderExecution": "ERROR",
-    "error": "LEADER_EXEC_TIMEOUT",
-    "timeoutSeconds": 600,
-    "decisionsReadback": []
+  "gateLiveVerified": true,
+  "gateWritesEnabled": true,
+  "deploymentStatus": "verified-source-parity-and-gate-live",
+  "previousRelianceGate": {
+    "contractAddress": "0x5cEeD74e1465da8D962C1DAe98903F72089E0A18",
+    "deploymentTransaction": "0x796c3b7972a66045b806470362032a7b9f182a0820be6372a934dc1132eaaa60",
+    "sourceSha256": "0465495b95c2afb9a833496f40becbea91daaf907e7c50af77ca50084a218c3f",
+    "status": "historical-v1-gate-with-live-timeout"
+  },
+  "gatePermitTestInstance": {
+    "contractAddress": "0xa48F2775CD457Fa2F7b4bf31d81C635367726F65",
+    "deploymentTransaction": "0xed89fc1203310685c8a252c5f215dfb8f74ca3ab12c0771bf7c272e2b6ef07ac",
+    "sourceSha256": "08686bfdaf4fd79b938c280c8577b1b119cb35316fd74d14ac9fce1145d6a05a",
+    "binding": { "prideAddress": "0x1A232b6eb69484B29f9Fc9A0Fa06c927083726e9", "charterId": 1, "expectedVersion": 1 },
+    "decisionTransaction": "0x2a2730d2f1dfd1f1a6e408eda9ad93f2bd52a44811891e5016b1c110cf17242e",
+    "decision": "PERMITTED",
+    "readback": "POLICY_SATISFIED"
   },
   "gateLiveAttempts": [
     {
@@ -43,6 +49,39 @@
       "error": "LEADER_EXEC_TIMEOUT",
       "timeoutSeconds": 600,
       "decisionReadback": []
+    },
+    {
+      "transactionHash": "0xdb419b3438116d20c5d6a8b73c636bce2f4e9508626beb90f53a6887ffba7b37",
+      "contractAddress": "0x0578499E7a84a2b6F11A2682160Ea57771c0DB15",
+      "actionId": "pride-v1-charter1-rejected-eligible-20261020",
+      "status": "FINALIZED",
+      "consensus": "NO_MAJORITY",
+      "leaderExecution": "ERROR",
+      "error": "LEADER_EXEC_TIMEOUT",
+      "timeoutSeconds": 600,
+      "decisionReadback": []
+    },
+    {
+      "transactionHash": "0x5b48ded23660fc2537cc059e254653d8c133201f50d397511bac43c1751d2402",
+      "contractAddress": "0x7eF1f14639e1F6DA28E4912Ec7D0C50DA0f8fB9a",
+      "actionId": "pride-v1-corrected-gate-rejected-20261021",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leaderExecution": "SUCCESS",
+      "decision": "REJECTED",
+      "reason": "DISQUALIFYING_CASE",
+      "prideReadback": "eligible=false; standing=MATERIAL_DEVIATION_ESTABLISHED; blocking_cases=[UPHELD]"
+    },
+    {
+      "transactionHash": "0x2a2730d2f1dfd1f1a6e408eda9ad93f2bd52a44811891e5016b1c110cf17242e",
+      "contractAddress": "0xa48F2775CD457Fa2F7b4bf31d81C635367726F65",
+      "actionId": "pride-v1-corrected-gate-permitted-20261021",
+      "status": "FINALIZED",
+      "consensus": "MAJORITY_AGREE",
+      "leaderExecution": "SUCCESS",
+      "decision": "PERMITTED",
+      "reason": "POLICY_SATISFIED",
+      "prideReadback": "eligible=true; standing=NOT_ESTABLISHED; checkpoint_id=3; checkpoint_outcome=MATCHES; checkpoint_digest=2ba9dacb3032f97ca330ab7fc2954dda23ac613135bb98bf4f6bdcea45955701"
     }
   ],
   "v1DeploymentEvidence": {
@@ -54,6 +93,9 @@
     "gateStatus": "FINALIZED",
     "gateExecution": "SUCCESS",
     "gateSourceParity": true,
+    "gateAddress": "0x7eF1f14639e1F6DA28E4912Ec7D0C50DA0f8fB9a",
+    "gateDeploymentTransaction": "0x9ccb5596afdd2460eb63cceae80895804d26b60059151f92557eec259c3a7e7a",
+    "gateSourceSha256": "08686bfdaf4fd79b938c280c8577b1b119cb35316fd74d14ac9fce1145d6a05a",
     "gateBinding": {
       "prideAddress": "0x1A232b6eb69484B29f9Fc9A0Fa06c927083726e9",
       "charterId": 0,

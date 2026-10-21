@@ -33,7 +33,7 @@ def test_gate_reads_canonical_standing_and_blocks_replay_and_unauthorized_caller
     result = json.loads(gate.authorize("action-1"))
     assert result["decision"] == "PERMITTED", (result, direct_vm._traces)
     assert requests[0]["calldata"]["method"] == "get_reliance_status"
-    assert requests[0]["state"] == 1  # StorageType.LATEST_FINAL avoids provisional source state.
+    assert requests[0]["state"] == 2  # Default cross-contract view reads the current target state.
     saved = json.loads(gate.get_decisions())[0]
     assert saved["standing"] == "OBSERVED"
     assert saved["has_checkpoint"] is True and saved["checkpoint_id"] == 2

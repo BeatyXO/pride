@@ -35,7 +35,7 @@ test('real network manifest identifies the verified Pride V1 and Reliance Gate d
   assert.match(config.relianceGateDeploymentTransaction, /^0x[0-9a-fA-F]{64}$/);
   assert.equal(config.relianceGateSourceParity, config.relianceGateSourceSha256 === createHash('sha256').update(gateSource).digest('hex'));
   assert.equal(config.writesEnabled, config.sourceParity && config.relianceGateSourceParity);
-  assert.equal(config.gateLiveVerified, false);
+  assert.equal(config.gateLiveVerified, true);
   assert.equal(config.gateWritesEnabled, config.writesEnabled && config.gateLiveVerified);
   assert.notEqual(config.contractAddress, config.previousPrototype.contractAddress);
   assert.equal(config.previousPrototype.contractAddress, '0x900B946995Cf1B8C8BcF0C6cb95B0DC0F34E6167');

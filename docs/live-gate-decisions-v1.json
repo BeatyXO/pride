@@ -1,0 +1,89 @@
+{
+  "network": "GenLayer Studionet",
+  "chainId": 61999,
+  "rpcUrl": "https://studio.genlayer.com/api",
+  "prideAddress": "0x1A232b6eb69484B29f9Fc9A0Fa06c927083726e9",
+  "gateSourceSha256": "08686bfdaf4fd79b938c280c8577b1b119cb35316fd74d14ac9fce1145d6a05a",
+  "crossContractCall": "PrideInterface(address).view().get_reliance_status(charter_id)",
+  "diagnosis": "The original Gate called view(state=StorageType.LATEST_FINAL), which differs from GenLayer's documented synchronous IC view API. Three finalized authorized calls through that version timed out at 600 seconds. Removing the state selector and using view() produced a live finalized Gate decision within seconds. The single-call source change and success on two separate Pride states isolate the failure to the noncanonical view invocation with strong on-chain evidence.",
+  "correctedReleaseGate": {
+    "contractAddress": "0x7eF1f14639e1F6DA28E4912Ec7D0C50DA0f8fB9a",
+    "deploymentTransaction": "0x9ccb5596afdd2460eb63cceae80895804d26b60059151f92557eec259c3a7e7a",
+    "binding": {
+      "prideAddress": "0x1A232b6eb69484B29f9Fc9A0Fa06c927083726e9",
+      "charterId": 0,
+      "expectedVersion": 2,
+      "operator": "0xD6423aE82a975d55C6CeaC222827A727325e0459"
+    },
+    "decisionTransaction": "0x5b48ded23660fc2537cc059e254653d8c133201f50d397511bac43c1751d2402",
+    "actionId": "pride-v1-corrected-gate-rejected-20261021",
+    "decision": "REJECTED",
+    "reason": "DISQUALIFYING_CASE",
+    "status": "FINALIZED",
+    "consensus": "MAJORITY_AGREE",
+    "leaderExecution": "SUCCESS",
+    "gateReadback": {
+      "permitted": false,
+      "reason": "DISQUALIFYING_CASE",
+      "standing": "MATERIAL_DEVIATION_ESTABLISHED",
+      "checkpointId": 2,
+      "checkpointOutcome": "MATCHES",
+      "checkpointDigest": "d12554e1c8982fba640fc75b96e2b19d0d0d6d819c3f7093bfd72ba768c0a0df",
+      "observedVersion": 2,
+      "expectedVersion": 2
+    },
+    "prideIndependentReadback": {
+      "eligible": false,
+      "reason": "DISQUALIFYING_CASE",
+      "standing": "MATERIAL_DEVIATION_ESTABLISHED",
+      "blockingCases": ["UPHELD"],
+      "checkpointDigest": "d12554e1c8982fba640fc75b96e2b19d0d0d6d819c3f7093bfd72ba768c0a0df"
+    }
+  },
+  "permitTestInstance": {
+    "contractAddress": "0xa48F2775CD457Fa2F7b4bf31d81C635367726F65",
+    "deploymentTransaction": "0xed89fc1203310685c8a252c5f215dfb8f74ca3ab12c0771bf7c272e2b6ef07ac",
+    "binding": {
+      "prideAddress": "0x1A232b6eb69484B29f9Fc9A0Fa06c927083726e9",
+      "charterId": 1,
+      "expectedVersion": 1,
+      "operator": "0xD6423aE82a975d55C6CeaC222827A727325e0459"
+    },
+    "decisionTransaction": "0x2a2730d2f1dfd1f1a6e408eda9ad93f2bd52a44811891e5016b1c110cf17242e",
+    "actionId": "pride-v1-corrected-gate-permitted-20261021",
+    "decision": "PERMITTED",
+    "reason": "POLICY_SATISFIED",
+    "status": "FINALIZED",
+    "consensus": "MAJORITY_AGREE",
+    "leaderExecution": "SUCCESS",
+    "gateReadback": {
+      "permitted": true,
+      "reason": "POLICY_SATISFIED",
+      "standing": "NOT_ESTABLISHED",
+      "checkpointId": 3,
+      "checkpointOutcome": "MATCHES",
+      "checkpointDigest": "2ba9dacb3032f97ca330ab7fc2954dda23ac613135bb98bf4f6bdcea45955701",
+      "observedVersion": 1,
+      "expectedVersion": 1
+    },
+    "prideIndependentReadback": {
+      "eligible": true,
+      "reason": "QUALIFYING_FINALIZED_MATCH",
+      "standing": "NOT_ESTABLISHED",
+      "blockingCases": [],
+      "checkpointDigest": "2ba9dacb3032f97ca330ab7fc2954dda23ac613135bb98bf4f6bdcea45955701"
+    }
+  },
+  "deployedSourceParity": {
+    "retrievalMethod": "gen_getContractCode",
+    "releaseGateExactBytesMatch": true,
+    "permitTestGateExactBytesMatch": true,
+    "localSha256": "08686bfdaf4fd79b938c280c8577b1b119cb35316fd74d14ac9fce1145d6a05a"
+  },
+  "callableSchema": {
+    "authorize": "authorize(action_id:string) -> any",
+    "getConfig": "get_config() -> string",
+    "getDecisions": "get_decisions(offset:int,limit:int) -> string",
+    "prideView": "get_reliance_status(charter_id:int) -> string"
+  }
+}

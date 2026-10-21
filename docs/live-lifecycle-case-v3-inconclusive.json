@@ -1,0 +1,53 @@
+{
+  "network": "GenLayer Studionet",
+  "chainId": 61999,
+  "rpcUrl": "https://studio.genlayer.com/api",
+  "prideAddress": "0x1A232b6eb69484B29f9Fc9A0Fa06c927083726e9",
+  "charterId": 2,
+  "charterTitle": "V1 Inconclusive Outcome Fixture",
+  "publisherId": 1,
+  "issuerAddress": "0xDAFEC147D24f5FbE1e540e228CFe017b6e5c5a2f",
+  "challengerAddress": "0xD6423aE82a975d55C6CeaC222827A727325e0459",
+  "fixtureCommit": "06fd2c1b42e4c53692cbf5a03f6b0bcb1a922cd3",
+  "fixturePath": "tests/fixtures/commitments/ambiguous.txt",
+  "fixtureSha256": "3915b5c4f96861b69fd308a1dd85c6bb936e106b22ae294117fd8e8f8a047cb0",
+  "baselineUrl": "https://raw.githubusercontent.com/BeatyXO/pride/9ab1a76c784b525671bc5bc3f9873b8bf581a23e/tests/fixtures/commitments/baseline.txt",
+  "baselineDigest": "2ba9dacb3032f97ca330ab7fc2954dda23ac613135bb98bf4f6bdcea45955701",
+  "checkpointId": 4,
+  "checkpointOutcome": "MATERIAL_CHANGE",
+  "transactionHashes": {
+    "registerPublisher": "0x18ed661948ce8b5404ca1411b1f3b54666afc38a4f470d9f4707cadb31abba7d",
+    "registerCharter": "0x1e456c24cf3198cd6e8723c1d754cbdd92dc0cad024c87dc75067f43b657d798",
+    "checkSource": "0xa2f6342680a011377c04110d017212d4d23fd2fa87b92a4b1473753fd4c06908",
+    "openChallenge": "0x7fb0af907d6b15c8d67de2165c7f59b2606267b90fe922b600e348e4927110e5",
+    "issuerRebuttal": "0x9136213abc39d81d35aaf034304c401301cadb1f8500a149372926a01073d779",
+    "adjudication": "0x02be25703f9dbc1d14e5c6c7be8c34d2d59b693ce656a9488a7149222f6fdb43"
+  },
+  "case": {
+    "challengeId": 2,
+    "caseId": "090b4325353e2b60a65bc4e7f253bab86ea453ce6cafd5b62a7f9128665001aa",
+    "evidenceUrl": "https://raw.githubusercontent.com/BeatyXO/pride/06fd2c1b42e4c53692cbf5a03f6b0bcb1a922cd3/tests/fixtures/commitments/ambiguous.txt",
+    "evidenceQuote": "The published token allocation is 30% in the signed table, but a footnote says the community allocation may be 15%; the document does not identify which figure applies to the current term.",
+    "rebuttalUrl": "https://raw.githubusercontent.com/BeatyXO/pride/9ab1a76c784b525671bc5bc3f9873b8bf581a23e/tests/fixtures/commitments/baseline.txt",
+    "rebuttalDigest": "2ba9dacb3032f97ca330ab7fc2954dda23ac613135bb98bf4f6bdcea45955701",
+    "rebuttalQuote": "Community allocation remains 30%.",
+    "finalStatus": "INCONCLUSIVE",
+    "verdict": "INCONCLUSIVE",
+    "findingCode": "AMBIGUOUS_OR_CONFLICTING",
+    "citationRole": "NONE",
+    "citation": ""
+  },
+  "finalPrideReadbacks": {
+    "standing": "INCONCLUSIVE",
+    "relianceStatus": {
+      "eligible": false,
+      "reason": "DISQUALIFYING_CASE",
+      "version": 1,
+      "checkpointId": 4,
+      "checkpointOutcome": "MATERIAL_CHANGE",
+      "checkpointDigest": "3915b5c4f96861b69fd308a1dd85c6bb936e106b22ae294117fd8e8f8a047cb0",
+      "blockingCases": ["INCONCLUSIVE"]
+    }
+  },
+  "receipts": "All six listed writes were retrieved as FINALIZED with MAJORITY_AGREE and leader execution SUCCESS. Final case and standing values were independently read from Pride after adjudication."
+}
