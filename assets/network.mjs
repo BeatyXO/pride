@@ -78,14 +78,14 @@ function frame() {
   const headerStatus = document.getElementById('wallet-header-status');
   const headerAction = document.getElementById('wallet-header-action');
   if (headerStatus) {
-    const wrongNetwork = Boolean(connectedAddress && currentChainId && currentChainId !== '0xf22f');
-    headerStatus.textContent = wrongNetwork ? 'Wrong network · switch to 61999' : connectedAddress ? `Connected · ${connectedAddress.slice(0, 6)}…${connectedAddress.slice(-4)}` : 'Wallet not connected';
+    const wrongNetwork = Boolean(currentChainId && currentChainId !== '0xf22f');
+    headerStatus.textContent = wrongNetwork ? `Wrong network · switch to 61999${connectedAddress ? ` · ${connectedAddress.slice(0, 6)}…${connectedAddress.slice(-4)}` : ''}` : connectedAddress ? `Connected · ${connectedAddress.slice(0, 6)}…${connectedAddress.slice(-4)}` : 'Wallet not connected';
     headerStatus.classList.toggle('wallet-wrong-network', wrongNetwork);
     headerStatus.title = connectedAddress ? `Connected wallet ${connectedAddress}` : 'Public records are readable without a wallet.';
   }
   const headerSwitch = document.getElementById('wallet-switch-network');
   if (headerSwitch) {
-    const wrongNetwork = Boolean(connectedAddress && currentChainId && currentChainId !== '0xf22f');
+    const wrongNetwork = Boolean(walletProvider && currentChainId && currentChainId !== '0xf22f');
     headerSwitch.style.display = wrongNetwork ? 'inline-flex' : 'none';
     headerSwitch.disabled = Boolean(operation?.message?.startsWith('Switching wallet'));
     headerSwitch.textContent = headerSwitch.disabled ? 'Switching…' : 'Switch to Studionet';
@@ -104,7 +104,7 @@ function frame() {
       <h1 class="title">Public chain records <span class="gradient-text">you can verify.</span></h1>
       <p class="lead">Browse finalized Studionet records without connecting. Connect a wallet to register a publisher or commitment, observe a source, submit an amendment, or challenge a record. Any wallet can submit an eligible source observation.</p>
       <div class="network-state" role="status" aria-live="polite">${esc(operation?.message || (!configured ? 'Deployment is not configured.' : (connectedAddress ? (currentChainId && currentChainId !== '0xf22f' ? 'Wrong network. Switch your wallet to GenLayer Studionet (chain 61999), then reconnect.' : `Connected to Studionet as ${connectedAddress}. You can use the publisher and commitment actions below.`) : 'Wallet not connected. Public records are read-only until you connect.')))}</div>
-      ${deploymentWritesEnabled ? (walletReady ? '' : '<p class="wallet-helper">Use <strong>Connect wallet</strong> in the top bar before writing. PRIDE never asks for your recovery phrase.</p>') : '<p class="wallet-helper">Writes are disabled because the checked out contracts do not match both source fingerprints recorded for this deployment.</p>'}
+      ${deploymentWritesEnabled ? (walletReady ? '' : '<p class="wallet-helper">If your wallet is on another chain, use <strong>Switch to Studionet</strong> in the top bar, then connect before writing. PRIDE never asks for your recovery phrase.</p>') : '<p class="wallet-helper">Writes are disabled because the checked out contracts do not match both source fingerprints recorded for this deployment.</p>'}
       ${transactions.length ? `<details class="section"><summary>Wallet transaction history (${transactions.length})</summary>${transactions.map((item) => `<p><b>${esc(item.action)}</b> · ${esc(item.status)} · ${esc(item.at)} · <a class="link-action" href="https://explorer-studio.genlayer.com/tx/${encodeURIComponent(item.hash)}" target="_blank" rel="noopener noreferrer">${esc(item.hash.slice(0, 12))}… ↗</a></p>`).join('')}</details>` : ''}
     </section>
     ${!configured ? `<section class="section banner">No contract address is set in <code>assets/deployment.json</code>. PRIDE will not show demo records in Real Network mode or pretend a deployment exists.</section>` : ''}
@@ -343,6 +343,10 @@ export async function mountNetwork(target, notify) {
     const cfg = await deployment();
     target.dataset.configured = String(cfg.network === 'studionet' && Number(cfg.chainId) === 61999 && allowedAddress(cfg.contractAddress));
     if (target.dataset.configured === 'true') {
+      try {
+        const provider = await discoverWallet();
+        currentChainId = String(await provider.request({ method: 'eth_chainId' }) || '').toLowerCase();
+      } catch { /* Read-only browsing still works without an injected wallet. */ }
       await readCharters();
       await recoverPendingTransactions();
     }
@@ -363,7 +367,7 @@ document.addEventListener('click', async (event) => {
       const provider = await discoverWallet();
       const result = await switchInjectedWalletToStudionet(provider, cfg.rpcUrl, cfg.explorerUrl);
       currentChainId = result.chainIdHex;
-      operation = { message: `Wallet switched to GenLayer Studionet (61999). Connected as ${connectedAddress}.` };
+      operation = { message: connectedAddress ? `Wallet switched to GenLayer Studionet (61999). Connected as ${connectedAddress}.` : 'Wallet switched to GenLayer Studionet (61999). Connect wallet to enable writes.' };
       await readCharters();
       frame();
     } else if (button.dataset.networkAction === 'connect') {

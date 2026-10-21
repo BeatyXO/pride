@@ -1,5 +1,5 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { createHash } from 'node:crypto';
+import { sourceSha256 as hashSource } from './source-hash.mjs';
 
 const manifestPath = new URL('../assets/deployment.json', import.meta.url);
 const outputPath = new URL('../public/assets/deployment.json', import.meta.url);
@@ -7,8 +7,8 @@ const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
 const env = process.env;
 const prideSource = await readFile(new URL('../contracts/Pride.py', import.meta.url));
 const gateSource = await readFile(new URL('../contracts/pride_reliance_gate.py', import.meta.url));
-const sourceSha256 = createHash('sha256').update(prideSource).digest('hex');
-const relianceGateSourceSha256 = createHash('sha256').update(gateSource).digest('hex');
+const sourceSha256 = hashSource(prideSource);
+const relianceGateSourceSha256 = hashSource(gateSource);
 const stringOverrides = [
   ['PRIDE_NETWORK', 'network'],
   ['PRIDE_CONTRACT_ADDRESS', 'contractAddress'],

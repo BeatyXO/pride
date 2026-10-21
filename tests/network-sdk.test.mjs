@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import {
@@ -10,6 +9,7 @@ import {
 } from '../assets/genlayer-client.js';
 import { connectInjectedWallet, subscribeWallet, switchInjectedWalletToStudionet } from '../assets/wallet.mjs';
 import { EventEmitter } from 'node:events';
+import { sourceSha256 } from '../scripts/source-hash.mjs';
 
 test('bundled GenLayerJS client exposes the Studionet read/write lifecycle API', () => {
   const client = createClient({ chain: studionet });
@@ -30,10 +30,10 @@ test('real network manifest identifies the verified Pride V1 and Reliance Gate d
   assert.equal(config.chainId, 61999);
   assert.match(config.contractAddress, /^0x[0-9a-fA-F]{40}$/);
   assert.match(config.deploymentTransaction, /^0x[0-9a-fA-F]{64}$/);
-  assert.equal(config.sourceParity, config.sourceSha256 === createHash('sha256').update(prideSource).digest('hex'));
+  assert.equal(config.sourceParity, config.sourceSha256 === sourceSha256(prideSource));
   assert.match(config.relianceGateAddress, /^0x[0-9a-fA-F]{40}$/);
   assert.match(config.relianceGateDeploymentTransaction, /^0x[0-9a-fA-F]{64}$/);
-  assert.equal(config.relianceGateSourceParity, config.relianceGateSourceSha256 === createHash('sha256').update(gateSource).digest('hex'));
+  assert.equal(config.relianceGateSourceParity, config.relianceGateSourceSha256 === sourceSha256(gateSource));
   assert.equal(config.writesEnabled, config.sourceParity && config.relianceGateSourceParity);
   assert.equal(config.gateLiveVerified, true);
   assert.equal(config.gateWritesEnabled, config.writesEnabled && config.gateLiveVerified);

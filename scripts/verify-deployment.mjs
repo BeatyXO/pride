@@ -1,11 +1,11 @@
-import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
+import { sourceSha256 } from './source-hash.mjs';
 
 const manifest = JSON.parse(await readFile(new URL('../assets/deployment.json', import.meta.url), 'utf8'));
 const source = await readFile(new URL('../contracts/Pride.py', import.meta.url));
-const actualHash = createHash('sha256').update(source).digest('hex');
+const actualHash = sourceSha256(source);
 const gateSource = await readFile(new URL('../contracts/pride_reliance_gate.py', import.meta.url));
-const actualGateHash = createHash('sha256').update(gateSource).digest('hex');
+const actualGateHash = sourceSha256(gateSource);
 if (manifest.network !== 'studionet' || manifest.chainId !== 61999) throw new Error('Manifest network/chain mismatch.');
 if (!manifest.contractAddress) {
   if (manifest.deploymentTransaction || manifest.sourceSha256) throw new Error('Partial active deployment metadata is not allowed.');
